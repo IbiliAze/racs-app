@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reader/core/storage/secure_storage.dart';
-import 'package:reader/features/cards/application/card_sync_service.dart';
+import 'package:reader/features/cards/application/card_service.dart';
 import 'package:reader/features/cards/domain/card.dart';
 import 'package:reader/features/scanner/application/scanner_service.dart';
 import 'package:reader/features/scanner/domain/scan_exception.dart';
@@ -11,20 +11,20 @@ enum ScanState { idle, scanning, success, failure }
 @injectable
 class ScannerViewModel extends ChangeNotifier {
   final ScannerService _scannerService;
-  final CardSyncService _cardSyncService;
+  final CardService _cardService;
   final SecureStorage _secureStorage;
 
-  ScannerViewModel(this._scannerService, this._cardSyncService, this._secureStorage);
+  ScannerViewModel(this._scannerService, this._cardService, this._secureStorage);
 
   ScanState _state = ScanState.idle;
   Card? _scannedCard;
   String? _error;
-  bool _isSyncing = false;
+  bool _isDownloading = false;
 
   ScanState get state => _state;
   Card? get scannedCard => _scannedCard;
   String? get error => _error;
-  bool get isSyncing => _isSyncing;
+  bool get isDownloading => _isDownloading;
 
   Future<void> onScan(String rawValue) async {
     _state = ScanState.scanning;
@@ -47,15 +47,15 @@ class ScannerViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> onSync() async {
-    _isSyncing = true;
+  Future<void> onDownload() async {
+    _isDownloading = true;
     notifyListeners();
 
     try {
       final profile = await _secureStorage.getProfile();
-      await _cardSyncService.sync(profile?['locationId'] ?? '');
+      await _cardService.downloadCards(profile?['ownerId'] ?? '');
     } finally {
-      _isSyncing = false;
+      _isDownloading = false;
       notifyListeners();
     }
   }

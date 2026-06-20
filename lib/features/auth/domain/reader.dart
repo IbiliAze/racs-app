@@ -3,6 +3,7 @@ class Reader {
   final String username;
   final bool inactive;
   final String locationId;
+  final String ownerId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -11,6 +12,7 @@ class Reader {
     required this.username,
     required this.inactive,
     required this.locationId,
+    required this.ownerId,
     required this.createdAt,
     required this.updatedAt,
   });

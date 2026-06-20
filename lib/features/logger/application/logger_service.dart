@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:reader/features/logger/domain/log.dart';
+import 'package:reader/features/logger/domain/log_params.dart';
 import 'package:reader/features/logger/domain/log_repository.dart';
 
 @lazySingleton
@@ -31,7 +32,8 @@ class LoggerService {
   Future<void> error(String message, {required String className}) =>
       log(message, level: LogLevel.error, className: className);
 
-  Future<List<Log>> getLogs() => _logRepository.getAll();
+  Future<List<Log>> getLogs(LogParams params) => _logRepository.getPaged(params);
+  Future<int> countLogs() => _logRepository.count();
 
   Future<void> clearLogs() => _logRepository.clearAll();
 }

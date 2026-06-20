@@ -6,7 +6,11 @@ import 'package:injectable/injectable.dart';
 import 'package:reader/core/network/webrtc_mesh_client.dart';
 import 'package:reader/core/network/websocket_client.dart';
 import 'package:reader/core/storage/secure_storage.dart';
+import 'package:reader/features/cards/application/card_service.dart';
 import 'package:reader/features/logger/application/logger_service.dart';
+import 'package:reader/features/scanner/application/scanner_service.dart';
+
+enum Action { created, updated, deleted }
 
 @lazySingleton
 class MeshService {
@@ -14,56 +18,67 @@ class MeshService {
   final WebRtcMeshClient _meshClient;
   final SecureStorage _secureStorage;
   final LoggerService _loggerService;
+  final CardService _cardService;
+  final ScannerService _scannerService;
 
   StreamSubscription<String>? _wsSubscription;
   StreamSubscription<IceCandidateEvent>? _iceSubscription;
+  StreamSubscription<bool>? _connectionSubscription;
   String? _readerId;
+  String? _ownerId;
 
   MeshService(
     this._wsClient,
     this._meshClient,
     this._secureStorage,
     this._loggerService,
+    this._cardService,
+    this._scannerService,
   );
 
   Future<void> connect() async {
-    final profile = await _secureStorage.getProfile();
-    if (profile == null) return;
-
-    _readerId = profile['id'] as String?;
-    final locationId = profile['locationId'] as String?;
-
     try {
-      await _wsClient.connect('/ws/mesh');
+      _loggerService.debug('Connecting to mesh', className: 'MeshService');
 
-      _wsClient.send(
-        jsonEncode({
-          'type': 'join',
-          'readerId': _readerId,
-          'locationId': locationId,
-        }),
-      );
+      final profile = await _secureStorage.getProfile();
+      if (profile == null) return;
 
-      _wsSubscription = _wsClient.messages.listen(_onSignalingMessage);
+      _readerId = profile['id'] as String?;
+      _ownerId = profile['ownerId'] as String?;
 
-      _iceSubscription = _meshClient.iceCandidates.listen((event) {
-        _wsClient.send(
-          jsonEncode({
-            'type': 'ice_candidate',
-            'from': _readerId,
-            'to': event.peerId,
-            'candidate': event.candidate.toMap(),
-          }),
-        );
+      _wsSubscription ??= _wsClient.messages.listen(_onSignalingMessage);
+      _iceSubscription ??= _meshClient.iceCandidates.listen(_onLocalIce);
+      _connectionSubscription ??= _wsClient.connectionState.listen((connected) {
+        if (connected) {
+          _sendJoin();
+        }
       });
 
-      _loggerService.info(
-        'Mesh joined as $_readerId at $locationId',
-        className: 'MeshService',
-      );
+      await _wsClient.connect('/ws/mesh');
     } catch (e) {
       _loggerService.error('Mesh connect failed: $e', className: 'MeshService');
     }
+  }
+
+  void _sendJoin() {
+    _wsClient.send(
+      jsonEncode({'type': 'join', 'readerId': _readerId, 'ownerId': _ownerId}),
+    );
+    _loggerService.info(
+      'Join (re)sent as $_readerId at $_ownerId',
+      className: 'MeshService',
+    );
+  }
+
+  void _onLocalIce(IceCandidateEvent event) {
+    _wsClient.send(
+      jsonEncode({
+        'type': 'ice_candidate',
+        'from': _readerId,
+        'to': event.peerId,
+        'candidate': event.candidate.toMap(),
+      }),
+    );
   }
 
   Future<void> _onSignalingMessage(String raw) async {
@@ -74,7 +89,7 @@ class MeshService {
         case 'peer_list':
           final peers = (data['peers'] as List).cast<String>();
           _loggerService.info(
-            'Mesh peers at location: $peers',
+            'Mesh peers at owner: $peers',
             className: 'MeshService',
           );
           for (final peerId in peers) {
@@ -122,6 +137,34 @@ class MeshService {
               c['sdpMLineIndex'] as int?,
             ),
           );
+
+        case 'card_update':
+          _loggerService.debug(
+            'Received card_update message from control plane',
+            className: 'MeshService',
+          );
+          final action = Action.values.byName(data['action'] as String);
+          final card = data['card'] as Map<String, dynamic>;
+          switch (action) {
+            case Action.created || Action.updated:
+              await _cardService.upsertFromMap(card);
+            case Action.deleted:
+              await _cardService.delete(card['id'] as String);
+          }
+
+        case 'scan_update':
+          _loggerService.debug(
+            'Received scan_update message from control plane',
+            className: 'MeshService',
+          );
+          final action = Action.values.byName(data['action'] as String);
+          final scan = data['scan'] as Map<String, dynamic>;
+          switch (action) {
+            case Action.created || Action.updated:
+              await _scannerService.upsertFromMap(scan);
+            case Action.deleted:
+              await _scannerService.delete(scan['id'] as String);
+          }
       }
     } catch (e) {
       _loggerService.error(
@@ -152,8 +195,12 @@ class MeshService {
   }
 
   Future<void> disconnect() async {
+    await _connectionSubscription?.cancel();
     await _wsSubscription?.cancel();
     await _iceSubscription?.cancel();
+    _connectionSubscription = null;
+    _wsSubscription = null;
+    _iceSubscription = null;
     await _wsClient.disconnect();
   }
 }

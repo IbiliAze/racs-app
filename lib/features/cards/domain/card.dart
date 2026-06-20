@@ -2,7 +2,6 @@ enum CardType { voucher, ticket, membership, pass }
 
 class Card {
   final String id;
-  final String locationId;
   final String value;
   final String label;
   final CardType type;
@@ -18,7 +17,6 @@ class Card {
 
   Card({
     required this.id,
-    required this.locationId,
     required this.value,
     required this.label,
     required this.type,

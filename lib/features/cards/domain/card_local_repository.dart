@@ -6,7 +6,10 @@ abstract class CardLocalRepository {
   Future<Card?> getCardByLabel(String label);
   Future<Card?> getCardByValue(String value);
   Future<List<Card>> getCards(CardParams params);
+  Future<int> countCards(String ownerId);
   Future<Card?> markUsed(String id);
   Future<void> upsert(Card card);
+  Future<void> upsertFromMap(Map<String, dynamic> map);
   Future<void> upsertAll(List<Card> cards);
+  Future<void> delete(String id);
 }

@@ -4,7 +4,6 @@ import 'package:reader/features/cards/domain/card.dart';
 
 class CardDto {
   final String id;
-  final String locationId;
   final String value;
   final String label;
   final String type;
@@ -20,7 +19,6 @@ class CardDto {
 
   const CardDto({
     required this.id,
-    required this.locationId,
     required this.value,
     required this.label,
     required this.type,
@@ -38,7 +36,6 @@ class CardDto {
   factory CardDto.fromJson(Map<String, dynamic> json) {
     return CardDto(
       id: json['id'] as String,
-      locationId: json['locationId'] as String,
       value: json['value'] as String,
       label: json['label'] as String,
       type: json['type'] as String? ?? 'voucher',
@@ -58,7 +55,6 @@ class CardDto {
     final metaRaw = map['metadata'] as String?;
     return CardDto(
       id: map['id'] as String,
-      locationId: map['locationId'] as String,
       value: map['value'] as String,
       label: map['label'] as String,
       type: map['type'] as String,
@@ -77,7 +73,6 @@ class CardDto {
   factory CardDto.fromDomain(Card card) {
     return CardDto(
       id: card.id,
-      locationId: card.locationId,
       value: card.value,
       label: card.label,
       type: card.type.name,
@@ -96,7 +91,6 @@ class CardDto {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'locationId': locationId,
       'value': value,
       'label': label,
       'type': type,
@@ -115,7 +109,6 @@ class CardDto {
   Card toDomain() {
     return Card(
       id: id,
-      locationId: locationId,
       value: value,
       label: label,
       type: CardType.values.firstWhere(

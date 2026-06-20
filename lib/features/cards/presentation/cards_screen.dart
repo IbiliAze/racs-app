@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:reader/common/widgets/pagination_controls.dart';
 import 'package:reader/features/cards/domain/card.dart' as card_domain;
 import 'package:reader/features/cards/view_models/cards_view_model.dart';
 import 'package:reader/injection.dart';
@@ -12,12 +14,35 @@ class CardsScreen extends StatefulWidget {
 
 class _CardsScreenState extends State<CardsScreen> {
   late final CardsViewModel _viewModel;
+  late final GoRouter _router;
+  bool _listenerAdded = false;
 
   @override
   void initState() {
     super.initState();
     _viewModel = getIt<CardsViewModel>();
-    _viewModel.loadCards();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_listenerAdded) {
+      _router = GoRouter.of(context);
+      _router.routerDelegate.addListener(_onNavigate);
+      _listenerAdded = true;
+      _viewModel.loadCards();
+    }
+  }
+
+  void _onNavigate() {
+    final location = _router.routeInformationProvider.value.uri.path;
+    if (location == '/cards' && mounted) _viewModel.loadCards();
+  }
+
+  @override
+  void dispose() {
+    _router.routerDelegate.removeListener(_onNavigate);
+    super.dispose();
   }
 
   @override
@@ -39,11 +64,31 @@ class _CardsScreenState extends State<CardsScreen> {
             return const Center(child: Text('No cards found.'));
           }
 
-          return ListView.builder(
-            itemCount: _viewModel.cards.length,
-            itemBuilder: (context, index) {
-              return _CardTile(card: _viewModel.cards[index]);
-            },
+          return Column(
+            children: [
+              if (_viewModel.totalPages > 1)
+                PaginationControls(
+                  page: _viewModel.page,
+                  totalPages: _viewModel.totalPages,
+                  onPrevious: _viewModel.canGoPrevious
+                      ? _viewModel.previousPage
+                      : null,
+                  onNext: _viewModel.canGoNext
+                      ? _viewModel.nextPage
+                      : null,
+                ),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: _viewModel.loadCards,
+                  child: ListView.builder(
+                    itemCount: _viewModel.cards.length,
+                    itemBuilder: (context, index) {
+                      return _CardTile(card: _viewModel.cards[index]);
+                    },
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),

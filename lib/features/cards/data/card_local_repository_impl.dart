@@ -1,4 +1,3 @@
-
 import 'package:injectable/injectable.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:reader/core/storage/local_database.dart';
@@ -57,6 +56,16 @@ class CardLocalRepositoryImpl implements CardLocalRepository {
   }
 
   @override
+  Future<int> countCards(String ownerId) async {
+    final db = await _db.database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM $_table WHERE ownerId = ?',
+      [ownerId],
+    );
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  @override
   Future<Card?> markUsed(String id) async {
     final db = await _db.database;
     final now = DateTime.now().toIso8601String();
@@ -80,6 +89,16 @@ class CardLocalRepositoryImpl implements CardLocalRepository {
   }
 
   @override
+  Future<void> upsertFromMap(Map<String, dynamic> map) async {
+    final db = await _db.database;
+    await db.insert(
+      _table,
+      CardDto.fromJson(map).toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  @override
   Future<void> upsertAll(List<Card> cards) async {
     final db = await _db.database;
     final batch = db.batch();
@@ -91,5 +110,11 @@ class CardLocalRepositoryImpl implements CardLocalRepository {
       );
     }
     await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    final db = await _db.database;
+    await db.delete(_table, where: 'id = ?', whereArgs: [id]);
   }
 }

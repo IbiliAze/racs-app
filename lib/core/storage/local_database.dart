@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 @lazySingleton
 class LocalDatabase {
   static const _dbName = 'reader.db';
-  static const _dbVersion = 5;
+  static const _dbVersion = 1;
 
   Database? _db;
 
@@ -22,7 +22,6 @@ class LocalDatabase {
       path,
       version: _dbVersion,
       onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
     );
   }
 
@@ -36,43 +35,13 @@ class LocalDatabase {
         timestamp TEXT NOT NULL
       )
     ''');
-    await _createCardsTable(db);
-    await _createScansTable(db);
-    await _createDlqTable(db);
-  }
-
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) await _createCardsTable(db);
-    if (oldVersion < 3) await _createScansTable(db);
-    if (oldVersion < 4) await _createDlqTable(db);
-    if (oldVersion < 5) {
-      await db.execute('DROP TABLE IF EXISTS dlq');
-      await _createDlqTable(db);
-    }
-  }
-
-  Future<void> _createScansTable(Database db) async {
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS scans (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        readerId TEXT NOT NULL,
-        scannedValue TEXT NOT NULL,
-        flag TEXT NOT NULL,
-        cardLabel TEXT,
-        createdAt TEXT NOT NULL
-      )
-    ''');
-  }
-
-  Future<void> _createCardsTable(Database db) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS cards (
+      CREATE TABLE cards (
         id TEXT PRIMARY KEY,
-        locationId TEXT NOT NULL,
+        ownerId TEXT NOT NULL,
         value TEXT NOT NULL,
         label TEXT NOT NULL,
         type TEXT NOT NULL,
-        ownerId TEXT NOT NULL,
         validFrom TEXT,
         validUntil TEXT,
         metadata TEXT,
@@ -83,11 +52,18 @@ class LocalDatabase {
         invalidated INTEGER NOT NULL DEFAULT 0
       )
     ''');
-  }
-
-  Future<void> _createDlqTable(Database db) async {
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS dlq (
+      CREATE TABLE scans (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        readerId TEXT NOT NULL,
+        scannedValue TEXT NOT NULL,
+        flag TEXT NOT NULL,
+        cardLabel TEXT,
+        createdAt TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE dlq (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         scannedValue TEXT NOT NULL,
         flag TEXT NOT NULL,

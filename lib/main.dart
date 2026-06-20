@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:reader/common/presentation/theme_settings.dart';
 import 'package:reader/core/router/app_router.dart';
 import 'package:reader/features/auth/application/auth_notifier.dart';
-import 'package:reader/features/auth/application/auth_service.dart';
-import 'package:reader/features/cards/application/card_sync_service.dart';
 import 'package:reader/features/scanner/application/mesh_service.dart';
 import 'package:reader/features/scanner/application/peer_sync_service.dart';
 import 'package:reader/features/settings/application/connection_notifier.dart';
@@ -26,9 +24,7 @@ void main() async {
     getIt<ConnectionNotifier>().setConnected(true);
 
     try {
-      final reader = await getIt<AuthService>().getAuthReader();
       getIt<AuthNotifier>().setAuthenticated(true);
-      await getIt<CardSyncService>().sync(reader.locationId);
       await getIt<MeshService>().connect();
     } catch (_) {
       getIt<AuthNotifier>().setAuthenticated(false);

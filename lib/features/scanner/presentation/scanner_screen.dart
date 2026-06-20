@@ -28,19 +28,21 @@ class _ScannerScreenState extends State<ScannerScreen> {
         builder: (context, _) {
           return switch (_viewModel.state) {
             ScanState.idle => _IdleView(
-              onSimulate: () => _viewModel.onScan('CARD-M006'),
-              onSync: _viewModel.onSync,
-              isSyncing: _viewModel.isSyncing,
+              onSimulate: () => _viewModel.onScan('2'),
+              onDownload: _viewModel.onDownload,
+              isDownloading: _viewModel.isDownloading,
             ),
-            ScanState.scanning => const Center(child: CircularProgressIndicator()),
+            ScanState.scanning => const Center(
+              child: CircularProgressIndicator(),
+            ),
             ScanState.success => _ResultView(
-                card: _viewModel.scannedCard!,
-                onReset: _viewModel.reset,
-              ),
+              card: _viewModel.scannedCard!,
+              onReset: _viewModel.reset,
+            ),
             ScanState.failure => _FailureView(
-                reason: _viewModel.error!,
-                onReset: _viewModel.reset,
-              ),
+              reason: _viewModel.error!,
+              onReset: _viewModel.reset,
+            ),
           };
         },
       ),
@@ -50,10 +52,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
 class _IdleView extends StatelessWidget {
   final VoidCallback onSimulate;
-  final VoidCallback onSync;
-  final bool isSyncing;
+  final VoidCallback onDownload;
+  final bool isDownloading;
 
-  const _IdleView({required this.onSimulate, required this.onSync, required this.isSyncing});
+  const _IdleView({
+    required this.onSimulate,
+    required this.onDownload,
+    required this.isDownloading,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -65,13 +71,20 @@ class _IdleView extends StatelessWidget {
           const SizedBox(height: 16),
           const Text('Ready to scan'),
           const SizedBox(height: 24),
-          FilledButton(onPressed: isSyncing ? null : onSimulate, child: const Text('Simulate Scan')),
+          FilledButton(
+            onPressed: isDownloading ? null : onSimulate,
+            child: const Text('Simulate Scan'),
+          ),
           const SizedBox(height: 8),
           FilledButton.tonal(
-            onPressed: isSyncing ? null : onSync,
-            child: isSyncing
-                ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Sync from remote'),
+            onPressed: isDownloading ? null : onDownload,
+            child: isDownloading
+                ? const SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Download Cards'),
           ),
           const SizedBox(height: 8),
           TextButton.icon(
@@ -129,7 +142,11 @@ class _FailureView extends StatelessWidget {
           children: [
             const Icon(Icons.cancel, size: 80, color: Colors.red),
             const SizedBox(height: 16),
-            Text(reason, style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center),
+            Text(
+              reason,
+              style: Theme.of(context).textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 24),
             FilledButton(onPressed: onReset, child: const Text('Try Again')),
           ],

@@ -13,12 +13,9 @@ class DlqScreen extends StatefulWidget {
 }
 
 class _DlqScreenState extends State<DlqScreen> {
-  static const _pageSize = 30;
-
   late final DlqViewModel _viewModel;
   late final GoRouter _router;
   bool _listenerAdded = false;
-  int _page = 0;
 
   @override
   void initState() {
@@ -39,10 +36,7 @@ class _DlqScreenState extends State<DlqScreen> {
 
   void _onNavigate() {
     final location = _router.routeInformationProvider.value.uri.path;
-    if (location == '/dlq' && mounted) {
-      setState(() => _page = 0);
-      _viewModel.loadDlq();
-    }
+    if (location == '/dlq' && mounted) _viewModel.loadDlq();
   }
 
   @override
@@ -102,11 +96,7 @@ class _DlqScreenState extends State<DlqScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.check_circle_outline,
-                    size: 56,
-                    color: Colors.green,
-                  ),
+                  Icon(Icons.check_circle_outline, size: 56, color: Colors.green),
                   SizedBox(height: 12),
                   Text('Queue is empty'),
                 ],
@@ -114,34 +104,25 @@ class _DlqScreenState extends State<DlqScreen> {
             );
           }
 
-          final totalPages = (_viewModel.dlq.length / _pageSize).ceil();
-          final safePage = _page.clamp(0, totalPages - 1);
-          final pageItems = _viewModel.dlq
-              .skip(safePage * _pageSize)
-              .take(_pageSize)
-              .toList();
-
           return Column(
             children: [
-              if (totalPages > 1)
+              if (_viewModel.totalPages > 1)
                 PaginationControls(
-                  page: safePage,
-                  totalPages: totalPages,
-                  onPrevious: safePage > 0
-                      ? () => setState(() => _page = safePage - 1)
+                  page: _viewModel.page,
+                  totalPages: _viewModel.totalPages,
+                  onPrevious: _viewModel.canGoPrevious
+                      ? _viewModel.previousPage
                       : null,
-                  onNext: safePage < totalPages - 1
-                      ? () => setState(() => _page = safePage + 1)
-                      : null,
+                  onNext: _viewModel.canGoNext ? _viewModel.nextPage : null,
                 ),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: _viewModel.loadDlq,
                   child: ListView.separated(
-                    itemCount: pageItems.length,
+                    itemCount: _viewModel.dlq.length,
                     separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, index) {
-                      final item = pageItems[index];
+                      final item = _viewModel.dlq[index];
                       return _DlqTile(
                         item: item,
                         isRetrying: _viewModel.isRetrying(item),

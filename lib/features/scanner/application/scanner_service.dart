@@ -12,6 +12,7 @@ import 'package:reader/features/scanner/domain/scan_local_repository.dart';
 import 'package:reader/features/scanner/domain/scan_record.dart';
 import 'package:reader/features/scanner/domain/scan_remote_repository.dart';
 import 'package:reader/features/scanner/domain/scan_step.dart';
+import 'package:reader/features/scanner/domain/scan_submit_exception.dart';
 import 'package:reader/features/scanner/domain/steps/card_lookup_step.dart';
 import 'package:reader/features/scanner/domain/steps/invalidation_step.dart';
 import 'package:reader/features/scanner/domain/steps/mark_used_step.dart';
@@ -38,6 +39,10 @@ class ScannerService {
     this._scanLocalRepository,
     this._secureStorage,
   );
+
+  Future<void> upsert(ScanRecord scan) => _scanLocalRepository.upsert(scan);
+  Future<void> upsertFromMap(Map<String, dynamic> map) => _scanLocalRepository.upsertFromMap(map);
+  Future<void> delete(String id) => _scanLocalRepository.delete(id);
 
   Future<ScanContext> scan(String rawValue) async {
     final steps = <ScanStep>[
@@ -66,13 +71,36 @@ class ScannerService {
     final profile = await _secureStorage.getProfile();
     final readerId = profile?['id'] as String? ?? '';
 
+    ScanSubmitException? rejection;
+
     try {
       await _scanRemoteRepository.submit(
         scannedValue: rawValue,
         flag: flag,
         cardId: context.card?.id,
       );
+    } on ScanSubmitException catch (e) {
+      if (e.isRejected) {
+        // 4xx — the server responded and denied the scan (e.g. duplicate).
+        // This is a definitive result, so surface it instead of retrying.
+        _loggerService.error(
+          'Scan rejected by server: $e',
+          className: 'ScannerService',
+        );
+        rejection = e;
+      } else {
+        // 5xx — the server could not process the scan. Queue it for retry and
+        // continue the workflow.
+        _loggerService.error(
+          'Server could not process scan, queuing to DLQ: $e',
+          className: 'ScannerService',
+        );
+        await _dlqService.insertItem(
+          DlqItem(scannedValue: rawValue, flag: flag, cardId: context.card?.id),
+        );
+      }
     } catch (e) {
+      // Server unreachable / network error — queue for retry and continue.
       _loggerService.error(
         'Failed to submit scan to server: $e',
         className: 'ScannerService',
@@ -101,6 +129,7 @@ class ScannerService {
     }
 
     if (failure != null) throw failure;
+    if (rejection != null) throw rejection;
 
     _peerSyncService.broadcastCardUsed(context.card!.id);
     return context;

@@ -25,8 +25,6 @@ import 'package:reader/features/auth/domain/auth_repository.dart' as _i555;
 import 'package:reader/features/auth/presentation/view_models/auth_view_model.dart'
     as _i750;
 import 'package:reader/features/cards/application/card_service.dart' as _i467;
-import 'package:reader/features/cards/application/card_sync_service.dart'
-    as _i330;
 import 'package:reader/features/cards/data/card_local_repository_impl.dart'
     as _i490;
 import 'package:reader/features/cards/data/card_repository_impl.dart' as _i551;
@@ -103,9 +101,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i829.LogRepository>(
       () => _i220.LogRepositoryImpl(gh<_i297.LocalDatabase>()),
     );
-    gh.lazySingleton<_i467.CardService>(
-      () => _i467.CardService(gh<_i682.CardLocalRepository>()),
-    );
     gh.lazySingleton<_i33.HttpClient>(
       () => _i33.HttpClient(
         gh<_i126.SettingsStorage>(),
@@ -158,12 +153,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i42.AuthService>(
       () => _i42.AuthService(gh<_i555.AuthRepository>()),
     );
-    gh.factory<_i253.CardsViewModel>(
-      () => _i253.CardsViewModel(
-        gh<_i467.CardService>(),
-        gh<_i136.SecureStorage>(),
-      ),
-    );
     gh.factory<_i465.CardRepository>(
       () => _i551.CardRepositoryImpl(gh<_i33.HttpClient>()),
     );
@@ -192,8 +181,8 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i880.WebRtcClient>(),
       ),
     );
-    gh.lazySingleton<_i330.CardSyncService>(
-      () => _i330.CardSyncService(
+    gh.lazySingleton<_i467.CardService>(
+      () => _i467.CardService(
         gh<_i465.CardRepository>(),
         gh<_i682.CardLocalRepository>(),
         gh<_i108.LoggerService>(),
@@ -202,18 +191,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i565.SettingsService>(
       () => _i565.SettingsService(gh<_i617.SettingsRepository>()),
     );
-    gh.lazySingleton<_i265.MeshService>(
-      () => _i265.MeshService(
-        gh<_i461.WebSocketClient>(),
-        gh<_i267.WebRtcMeshClient>(),
-        gh<_i136.SecureStorage>(),
-        gh<_i108.LoggerService>(),
-      ),
-    );
     gh.factory<_i610.ScannerViewModel>(
       () => _i610.ScannerViewModel(
         gh<_i968.ScannerService>(),
-        gh<_i330.CardSyncService>(),
+        gh<_i467.CardService>(),
         gh<_i136.SecureStorage>(),
       ),
     );
@@ -225,6 +206,22 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i75.SettingsViewModel(
         gh<_i565.SettingsService>(),
         gh<_i723.ConnectionNotifier>(),
+      ),
+    );
+    gh.factory<_i253.CardsViewModel>(
+      () => _i253.CardsViewModel(
+        gh<_i467.CardService>(),
+        gh<_i136.SecureStorage>(),
+      ),
+    );
+    gh.lazySingleton<_i265.MeshService>(
+      () => _i265.MeshService(
+        gh<_i461.WebSocketClient>(),
+        gh<_i267.WebRtcMeshClient>(),
+        gh<_i136.SecureStorage>(),
+        gh<_i108.LoggerService>(),
+        gh<_i467.CardService>(),
+        gh<_i968.ScannerService>(),
       ),
     );
     return this;

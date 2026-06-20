@@ -5,6 +5,7 @@ import 'package:reader/core/network/http_client.dart';
 import 'package:reader/core/storage/secure_storage.dart';
 import 'package:reader/features/scanner/domain/scan_flag.dart';
 import 'package:reader/features/scanner/domain/scan_remote_repository.dart';
+import 'package:reader/features/scanner/domain/scan_submit_exception.dart';
 
 @Injectable(as: ScanRemoteRepository)
 class ScanRepositoryImpl implements ScanRemoteRepository {
@@ -30,6 +31,12 @@ class ScanRepositoryImpl implements ScanRemoteRepository {
       if (cardId != null) 'cardId': cardId,
     };
 
-    await _httpClient.post('/api/scan', body: jsonEncode(body));
+    final response = await _httpClient.post('/api/scan', body: jsonEncode(body));
+    final status = response.statusCode;
+
+    if (status >= 200 && status < 300) return;
+
+    final responseBody = await response.transform(utf8.decoder).join();
+    throw ScanSubmitException(responseBody, statusCode: status);
   }
 }

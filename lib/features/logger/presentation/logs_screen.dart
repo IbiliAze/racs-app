@@ -13,12 +13,9 @@ class LogsScreen extends StatefulWidget {
 }
 
 class _LogsScreenState extends State<LogsScreen> {
-  static const _pageSize = 30;
-
   late final LogsViewModel _viewModel;
   late final GoRouter _router;
   bool _listenerAdded = false;
-  int _page = 0;
 
   @override
   void initState() {
@@ -39,10 +36,7 @@ class _LogsScreenState extends State<LogsScreen> {
 
   void _onNavigate() {
     final location = _router.routeInformationProvider.value.uri.path;
-    if (location == '/logs' && mounted) {
-      setState(() => _page = 0);
-      _viewModel.loadLogs();
-    }
+    if (location == '/logs' && mounted) _viewModel.loadLogs();
   }
 
   @override
@@ -56,9 +50,7 @@ class _LogsScreenState extends State<LogsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Clear all?'),
-        content: const Text(
-          'This will permanently remove all logs.',
-        ),
+        content: const Text('This will permanently remove all logs.'),
         actions: [
           TextButton(
             onPressed: () => ctx.pop(false),
@@ -101,25 +93,16 @@ class _LogsScreenState extends State<LogsScreen> {
             return const Center(child: Text('No logs yet.'));
           }
 
-          final totalPages = (_viewModel.logs.length / _pageSize).ceil();
-          final safePage = _page.clamp(0, totalPages - 1);
-          final pageItems = _viewModel.logs
-              .skip(safePage * _pageSize)
-              .take(_pageSize)
-              .toList();
-
           return Column(
             children: [
-              if (totalPages > 1)
+              if (_viewModel.totalPages > 1)
                 PaginationControls(
-                  page: safePage,
-                  totalPages: totalPages,
-                  onPrevious: safePage > 0
-                      ? () => setState(() => _page = safePage - 1)
+                  page: _viewModel.page,
+                  totalPages: _viewModel.totalPages,
+                  onPrevious: _viewModel.canGoPrevious
+                      ? _viewModel.previousPage
                       : null,
-                  onNext: safePage < totalPages - 1
-                      ? () => setState(() => _page = safePage + 1)
-                      : null,
+                  onNext: _viewModel.canGoNext ? _viewModel.nextPage : null,
                 ),
               Expanded(
                 child: Padding(
@@ -127,8 +110,8 @@ class _LogsScreenState extends State<LogsScreen> {
                   child: RefreshIndicator(
                     onRefresh: _viewModel.loadLogs,
                     child: ListView.builder(
-                      itemCount: pageItems.length,
-                      itemBuilder: (_, i) => _LogTile(log: pageItems[i]),
+                      itemCount: _viewModel.logs.length,
+                      itemBuilder: (_, i) => _LogTile(log: _viewModel.logs[i]),
                     ),
                   ),
                 ),

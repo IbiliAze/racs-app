@@ -45,6 +45,21 @@ class ScannerService {
   Future<void> delete(String id) => _scanLocalRepository.delete(id);
 
   Future<ScanContext> scan(String rawValue) async {
+    final outcome = await _runPipeline(rawValue);
+    final context = outcome.context;
+    final flag = outcome.flag;
+
+    final rejection = await _submitRemote(rawValue, flag, context);
+    await _persistLocal(rawValue, flag, context);
+
+    if (outcome.failure != null) throw outcome.failure!;
+    if (rejection != null) throw rejection;
+
+    _peerSyncService.broadcastCardUsed(context.card!.id);
+    return context;
+  }
+
+  Future<_PipelineOutcome> _runPipeline(String rawValue) async {
     final steps = <ScanStep>[
       ParseStep(_loggerService),
       CardLookupStep(_localRepository, _loggerService),
@@ -55,30 +70,30 @@ class ScannerService {
     ];
 
     var context = ScanContext(rawValue: rawValue);
-    ScanException? failure;
-    ScanFlag flag = ScanFlag.passedOk;
 
     try {
       for (final step in steps) {
         context = await step.execute(context);
       }
     } on ScanException catch (e) {
-      failure = e;
-      context = e.context;
-      flag = e.flag;
+      return _PipelineOutcome(context: e.context, flag: e.flag, failure: e);
     }
 
-    final profile = await _secureStorage.getProfile();
-    final readerId = profile?['id'] as String? ?? '';
+    return _PipelineOutcome(context: context, flag: ScanFlag.passedOk);
+  }
 
-    ScanSubmitException? rejection;
-
+  Future<ScanSubmitException?> _submitRemote(
+    String rawValue,
+    ScanFlag flag,
+    ScanContext context,
+  ) async {
     try {
       await _scanRemoteRepository.submit(
         scannedValue: rawValue,
         flag: flag,
         cardId: context.card?.id,
       );
+      return null;
     } on ScanSubmitException catch (e) {
       if (e.isRejected) {
         // 4xx — the server responded and denied the scan (e.g. duplicate).
@@ -87,29 +102,43 @@ class ScannerService {
           'Scan rejected by server: $e',
           className: 'ScannerService',
         );
-        rejection = e;
-      } else {
-        // 5xx — the server could not process the scan. Queue it for retry and
-        // continue the workflow.
-        _loggerService.error(
-          'Server could not process scan, queuing to DLQ: $e',
-          className: 'ScannerService',
-        );
-        await _dlqService.insertItem(
-          DlqItem(scannedValue: rawValue, flag: flag, cardId: context.card?.id),
-        );
+        return e;
       }
+      // 5xx — the server could not process the scan. Queue it for retry.
+      _loggerService.error(
+        'Server could not process scan, queuing to DLQ: $e',
+        className: 'ScannerService',
+      );
+      await _queueForRetry(rawValue, flag, context);
+      return null;
     } catch (e) {
       // Server unreachable / network error — queue for retry and continue.
       _loggerService.error(
         'Failed to submit scan to server: $e',
         className: 'ScannerService',
       );
-
-      await _dlqService.insertItem(
-        DlqItem(scannedValue: rawValue, flag: flag, cardId: context.card?.id),
-      );
+      await _queueForRetry(rawValue, flag, context);
+      return null;
     }
+  }
+
+  Future<void> _queueForRetry(
+    String rawValue,
+    ScanFlag flag,
+    ScanContext context,
+  ) {
+    return _dlqService.insertItem(
+      DlqItem(scannedValue: rawValue, flag: flag, cardId: context.card?.id),
+    );
+  }
+
+  Future<void> _persistLocal(
+    String rawValue,
+    ScanFlag flag,
+    ScanContext context,
+  ) async {
+    final profile = await _secureStorage.getProfile();
+    final readerId = profile?['id'] as String? ?? '';
 
     try {
       await _scanLocalRepository.insert(
@@ -127,11 +156,17 @@ class ScannerService {
         className: 'ScannerService',
       );
     }
-
-    if (failure != null) throw failure;
-    if (rejection != null) throw rejection;
-
-    _peerSyncService.broadcastCardUsed(context.card!.id);
-    return context;
   }
+}
+
+class _PipelineOutcome {
+  final ScanContext context;
+  final ScanFlag flag;
+  final ScanException? failure;
+
+  const _PipelineOutcome({
+    required this.context,
+    required this.flag,
+    this.failure,
+  });
 }

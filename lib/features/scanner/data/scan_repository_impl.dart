@@ -28,7 +28,7 @@ class ScanRepositoryImpl implements ScanRemoteRepository {
       'readerId': readerId,
       'scannedValue': scannedValue,
       'flag': flag.serverValue,
-      if (cardId != null) 'cardId': cardId,
+      'cardId': ?cardId,
     };
 
     final response = await _httpClient.post('/api/scan', body: jsonEncode(body));

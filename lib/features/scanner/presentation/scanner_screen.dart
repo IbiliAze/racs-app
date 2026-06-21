@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:reader/features/cards/domain/card.dart' as card_domain;
 import 'package:reader/features/scanner/view_models/scanner_view_model.dart';
 import 'package:reader/injection.dart';
@@ -11,146 +14,427 @@ class ScannerScreen extends StatefulWidget {
   State<ScannerScreen> createState() => _ScannerScreenState();
 }
 
-class _ScannerScreenState extends State<ScannerScreen> {
+class _ScannerScreenState extends State<ScannerScreen>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   late final ScannerViewModel _viewModel;
+  late final MobileScannerController _controller;
+  late final AnimationController _lineController;
 
   @override
   void initState() {
     super.initState();
     _viewModel = getIt<ScannerViewModel>();
+    _controller = MobileScannerController(
+      // Ask the camera for 720p frames.
+      cameraResolution: const Size(1280, 720),
+      detectionSpeed: DetectionSpeed.noDuplicates,
+    );
+    _lineController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _lineController.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Free the camera when the app goes to the background and bring it back
+    // when the app returns to the foreground.
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _controller.start();
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        _controller.stop();
+    }
+  }
+
+  void _onDetect(BarcodeCapture capture) {
+    // Only act on a fresh scan; ignore frames while showing a result.
+    if (_viewModel.state != ScanState.idle) return;
+    final value = capture.barcodes.firstOrNull?.rawValue;
+    if (value == null || value.isEmpty) return;
+    _viewModel.onScan(value);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListenableBuilder(
-        listenable: _viewModel,
-        builder: (context, _) {
-          return switch (_viewModel.state) {
-            ScanState.idle => _IdleView(
-              onSimulate: () => _viewModel.onScan('2'),
-              onDownload: _viewModel.onDownload,
-              isDownloading: _viewModel.isDownloading,
-            ),
-            ScanState.scanning => const Center(
-              child: CircularProgressIndicator(),
-            ),
-            ScanState.success => _ResultView(
-              card: _viewModel.scannedCard!,
-              onReset: _viewModel.reset,
-            ),
-            ScanState.failure => _FailureView(
-              reason: _viewModel.error!,
-              onReset: _viewModel.reset,
-            ),
-          };
+      backgroundColor: Colors.black,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final size = constraints.biggest;
+          final boxSide = size.width * 0.7;
+          final boxRect = Rect.fromCenter(
+            center: Offset(size.width / 2, size.height / 2),
+            width: boxSide,
+            height: boxSide,
+          );
+          const radius = 24.0;
+
+          // Frost follows the theme: a dark navy in dark mode, a light blue in
+          // light mode. The top-bar text flips with it so it stays readable.
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final frostColor = isDark
+              ? const Color(0xFF07111F).withValues(alpha: 0.6)
+              : const Color(0xFFBFD7FF).withValues(alpha: 0.6);
+          final barTextColor = isDark ? Colors.white : Colors.black87;
+
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              // 1. Full-screen camera. Detection is limited to scanWindow.
+              MobileScanner(
+                controller: _controller,
+                scanWindow: boxRect,
+                fit: BoxFit.cover,
+                onDetect: _onDetect,
+              ),
+
+              // 2. Frost + dim everything outside the scan box.
+              ClipPath(
+                clipper: _CutoutClipper(boxRect, radius),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(color: frostColor),
+                ),
+              ),
+
+              // 3. The scan box outline with the moving red line.
+              Positioned.fromRect(
+                rect: boxRect,
+                child: _ScanBox(
+                  radius: radius,
+                  animation: _lineController,
+                ),
+              ),
+
+              // 4. Glass card with the app name at the top.
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: _GlassBar(
+                      title: 'RACS Reader',
+                      textColor: barTextColor,
+                    ),
+                  ),
+                ),
+              ),
+
+              // 5. The two action buttons at the bottom.
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ListenableBuilder(
+                      listenable: _viewModel,
+                      builder: (context, _) => _BottomBar(
+                        isDownloading: _viewModel.isDownloading,
+                        onDownload: _viewModel.onDownload,
+                        onMyScans: () => context.push('/scanner/scans'),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 6. Result / failure / progress on top of the camera.
+              ListenableBuilder(
+                listenable: _viewModel,
+                builder: (context, _) {
+                  return switch (_viewModel.state) {
+                    ScanState.idle => const SizedBox.shrink(),
+                    ScanState.scanning => const _ScrimOverlay(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
+                    ScanState.success => _ScrimOverlay(
+                      child: _ResultCard.success(
+                        card: _viewModel.scannedCard!,
+                        onDismiss: _viewModel.reset,
+                      ),
+                    ),
+                    ScanState.failure => _ScrimOverlay(
+                      child: _ResultCard.failure(
+                        reason: _viewModel.error!,
+                        onDismiss: _viewModel.reset,
+                      ),
+                    ),
+                  };
+                },
+              ),
+            ],
+          );
         },
       ),
     );
   }
 }
 
-class _IdleView extends StatelessWidget {
-  final VoidCallback onSimulate;
-  final VoidCallback onDownload;
-  final bool isDownloading;
+/// Clips to everything *outside* the rounded box, so a blur/dim layer placed
+/// inside it frosts the surround and leaves the box clear.
+class _CutoutClipper extends CustomClipper<Path> {
+  final Rect box;
+  final double radius;
 
-  const _IdleView({
-    required this.onSimulate,
-    required this.onDownload,
+  const _CutoutClipper(this.box, this.radius);
+
+  @override
+  Path getClip(Size size) {
+    final full = Path()..addRect(Offset.zero & size);
+    final hole = Path()
+      ..addRRect(RRect.fromRectAndRadius(box, Radius.circular(radius)));
+    return Path.combine(PathOperation.difference, full, hole);
+  }
+
+  @override
+  bool shouldReclip(_CutoutClipper oldClipper) =>
+      box != oldClipper.box || radius != oldClipper.radius;
+}
+
+/// The rounded outline plus a red line that sweeps up and down.
+class _ScanBox extends StatelessWidget {
+  final double radius;
+  final Animation<double> animation;
+
+  const _ScanBox({required this.radius, required this.animation});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 2),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: AnimatedBuilder(
+          animation: animation,
+          builder: (context, _) {
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final y = animation.value * constraints.maxHeight;
+                return Stack(
+                  children: [
+                    Positioned(
+                      top: y - 1,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        height: 2,
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.red.withValues(alpha: 0.6),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Frosted glass bar showing the app name.
+class _GlassBar extends StatelessWidget {
+  final String title;
+  final Color textColor;
+
+  const _GlassBar({required this.title, required this.textColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.qr_code_scanner, color: textColor, size: 22),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomBar extends StatelessWidget {
+  final bool isDownloading;
+  final VoidCallback onDownload;
+  final VoidCallback onMyScans;
+
+  const _BottomBar({
     required this.isDownloading,
+    required this.onDownload,
+    required this.onMyScans,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.qr_code_scanner, size: 80, color: Colors.grey),
-          const SizedBox(height: 16),
-          const Text('Ready to scan'),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: isDownloading ? null : onSimulate,
-            child: const Text('Simulate Scan'),
-          ),
-          const SizedBox(height: 8),
-          FilledButton.tonal(
+    return Row(
+      children: [
+        Expanded(
+          child: FilledButton.icon(
             onPressed: isDownloading ? null : onDownload,
-            child: isDownloading
+            icon: isDownloading
                 ? const SizedBox(
                     height: 16,
                     width: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Download Cards'),
+                : const Icon(Icons.download),
+            label: const Text('Download Scans'),
           ),
-          const SizedBox(height: 8),
-          TextButton.icon(
-            onPressed: () => context.push('/scanner/scans'),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: FilledButton.tonalIcon(
+            onPressed: onMyScans,
             icon: const Icon(Icons.history),
-            label: const Text('Scans'),
+            label: const Text('My Scans'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Dims the camera and centers its child — used for progress and results.
+class _ScrimOverlay extends StatelessWidget {
+  final Widget child;
+
+  const _ScrimOverlay({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: ColoredBox(
+        color: Colors.black.withValues(alpha: 0.7),
+        child: Center(child: child),
+      ),
+    );
+  }
+}
+
+class _ResultCard extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String? subtitle;
+  final VoidCallback onDismiss;
+
+  const _ResultCard({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.onDismiss,
+  });
+
+  factory _ResultCard.success({
+    required card_domain.Card card,
+    required VoidCallback onDismiss,
+  }) {
+    return _ResultCard(
+      icon: Icons.check_circle,
+      color: Colors.green,
+      title: card.label,
+      subtitle: card.value,
+      onDismiss: onDismiss,
+    );
+  }
+
+  factory _ResultCard.failure({
+    required String reason,
+    required VoidCallback onDismiss,
+  }) {
+    return _ResultCard(
+      icon: Icons.cancel,
+      color: Colors.red,
+      title: reason,
+      subtitle: null,
+      onDismiss: onDismiss,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 88, color: color),
+          const SizedBox(height: 20),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              subtitle!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+            ),
+          ],
+          const SizedBox(height: 28),
+          FilledButton(
+            onPressed: onDismiss,
+            child: const Text('Scan Again'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ResultView extends StatelessWidget {
-  final card_domain.Card card;
-  final VoidCallback onReset;
-
-  const _ResultView({required this.card, required this.onReset});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.check_circle, size: 80, color: Colors.green),
-            const SizedBox(height: 16),
-            Text(card.label, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text(card.value, style: const TextStyle(color: Colors.grey)),
-            const SizedBox(height: 24),
-            FilledButton(onPressed: onReset, child: const Text('Scan Again')),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FailureView extends StatelessWidget {
-  final String reason;
-  final VoidCallback onReset;
-
-  const _FailureView({required this.reason, required this.onReset});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.cancel, size: 80, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              reason,
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton(onPressed: onReset, child: const Text('Try Again')),
-          ],
-        ),
       ),
     );
   }

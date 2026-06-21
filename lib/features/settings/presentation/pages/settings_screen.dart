@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:reader/features/settings/application/theme_settings.dart';
 import 'package:reader/features/settings/presentation/view_models/settings_view_model.dart';
 import 'package:reader/injection.dart';
 
@@ -81,6 +83,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _ConnectivityRow(label: 'HTTP', connected: _viewModel.isHttpConnected),
                 _ConnectivityRow(label: 'WebSocket', connected: _viewModel.isWsConnected),
                 _ConnectivityRow(label: 'STUN', connected: _viewModel.isStunConnected),
+                const Divider(height: 32),
+                Consumer<ThemeSettings>(
+                  builder: (context, theme, _) => SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Dark mode'),
+                    secondary: const Icon(Icons.dark_mode_outlined),
+                    value: theme.isDarkMode,
+                    onChanged: theme.toggleDarkMode,
+                  ),
+                ),
               ],
             );
           },

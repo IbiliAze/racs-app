@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:reader/common/presentation/theme_settings.dart';
+import 'package:reader/features/settings/application/theme_settings.dart';
 import 'package:reader/core/router/app_router.dart';
 import 'package:reader/features/auth/application/auth_notifier.dart';
 import 'package:reader/features/scanner/application/mesh_service.dart';
@@ -75,6 +75,13 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF07111F),
       ).copyWith(
         textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+        // Blue-tinted card surface so tiles read navy instead of plain grey.
+        cardTheme: const CardThemeData(color: Color(0xFF0F1E33)),
+        // Match the app bar to the navy cards.
+        appBarTheme: const AppBarThemeData(
+          backgroundColor: Color(0xFF0F1E33),
+          foregroundColor: Colors.white,
+        ),
       ),
     );
   }

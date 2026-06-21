@@ -13,10 +13,12 @@ import 'package:reader/features/scanner/domain/scan_record.dart';
 import 'package:reader/features/scanner/domain/scan_remote_repository.dart';
 import 'package:reader/features/scanner/domain/scan_step.dart';
 import 'package:reader/features/scanner/domain/scan_submit_exception.dart';
+import 'package:reader/features/scanner/domain/steps/broadcast_step.dart';
 import 'package:reader/features/scanner/domain/steps/card_lookup_step.dart';
 import 'package:reader/features/scanner/domain/steps/invalidation_step.dart';
 import 'package:reader/features/scanner/domain/steps/mark_used_step.dart';
 import 'package:reader/features/scanner/domain/steps/parse_step.dart';
+import 'package:reader/features/scanner/domain/steps/submit_remote_step.dart';
 import 'package:reader/features/scanner/domain/steps/used_step.dart';
 import 'package:reader/features/scanner/domain/steps/validity_step.dart';
 
@@ -49,13 +51,10 @@ class ScannerService {
     final context = outcome.context;
     final flag = outcome.flag;
 
-    final rejection = await _submitRemote(rawValue, flag, context);
     await _persistLocal(rawValue, flag, context);
 
     if (outcome.failure != null) throw outcome.failure!;
-    if (rejection != null) throw rejection;
 
-    _peerSyncService.broadcastCardUsed(context.card!.id);
     return context;
   }
 
@@ -66,7 +65,9 @@ class ScannerService {
       ValidityStep(_loggerService),
       InvalidationStep(_loggerService),
       UsedStep(_loggerService),
+      SubmitRemoteStep(_scanRemoteRepository, _dlqService, _loggerService),
       MarkUsedStep(_localRepository, _loggerService),
+      BroadcastStep(_peerSyncService, _loggerService),
     ];
 
     var context = ScanContext(rawValue: rawValue);
@@ -80,56 +81,6 @@ class ScannerService {
     }
 
     return _PipelineOutcome(context: context, flag: ScanFlag.passedOk);
-  }
-
-  Future<ScanSubmitException?> _submitRemote(
-    String rawValue,
-    ScanFlag flag,
-    ScanContext context,
-  ) async {
-    try {
-      await _scanRemoteRepository.submit(
-        scannedValue: rawValue,
-        flag: flag,
-        cardId: context.card?.id,
-      );
-      return null;
-    } on ScanSubmitException catch (e) {
-      if (e.isRejected) {
-        // 4xx — the server responded and denied the scan (e.g. duplicate).
-        // This is a definitive result, so surface it instead of retrying.
-        _loggerService.error(
-          'Scan rejected by server: $e',
-          className: 'ScannerService',
-        );
-        return e;
-      }
-      // 5xx — the server could not process the scan. Queue it for retry.
-      _loggerService.error(
-        'Server could not process scan, queuing to DLQ: $e',
-        className: 'ScannerService',
-      );
-      await _queueForRetry(rawValue, flag, context);
-      return null;
-    } catch (e) {
-      // Server unreachable / network error — queue for retry and continue.
-      _loggerService.error(
-        'Failed to submit scan to server: $e',
-        className: 'ScannerService',
-      );
-      await _queueForRetry(rawValue, flag, context);
-      return null;
-    }
-  }
-
-  Future<void> _queueForRetry(
-    String rawValue,
-    ScanFlag flag,
-    ScanContext context,
-  ) {
-    return _dlqService.insertItem(
-      DlqItem(scannedValue: rawValue, flag: flag, cardId: context.card?.id),
-    );
   }
 
   Future<void> _persistLocal(

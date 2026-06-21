@@ -6,6 +6,11 @@ import 'package:reader/core/storage/settings_storage.dart';
 
 @lazySingleton
 class HttpClient {
+  /// Maximum time to wait both for the connection and for the server to start
+  /// responding. Kept short so a slow or dead server can't freeze a scan — the
+  /// caller treats a timeout like an unreachable server (queues to the DLQ).
+  static const _timeout = Duration(seconds: 5);
+
   final SettingsStorage _settingsStorage;
   final SecureStorage _secureStorage;
 
@@ -30,44 +35,44 @@ class HttpClient {
   Future<io.HttpClientResponse> get(String path) async {
     final h = await host;
     final uri = Uri.http(h, path);
-    final client = io.HttpClient();
+    final client = io.HttpClient()..connectionTimeout = _timeout;
     final request = await client.getUrl(uri);
     await _attachAuth(request);
-    return request.close();
+    return request.close().timeout(_timeout);
   }
 
   Future<io.HttpClientResponse> post(String path, {Object? body}) async {
     final h = await host;
     final uri = Uri.http(h, path);
-    final client = io.HttpClient();
+    final client = io.HttpClient()..connectionTimeout = _timeout;
     final request = await client.postUrl(uri);
     await _attachAuth(request);
     if (body != null) {
       request.headers.contentType = io.ContentType.json;
       request.write(body);
     }
-    return request.close();
+    return request.close().timeout(_timeout);
   }
 
   Future<io.HttpClientResponse> put(String path, {Object? body}) async {
     final h = await host;
     final uri = Uri.http(h, path);
-    final client = io.HttpClient();
+    final client = io.HttpClient()..connectionTimeout = _timeout;
     final request = await client.putUrl(uri);
     await _attachAuth(request);
     if (body != null) {
       request.headers.contentType = io.ContentType.json;
       request.write(body);
     }
-    return request.close();
+    return request.close().timeout(_timeout);
   }
 
   Future<io.HttpClientResponse> delete(String path) async {
     final h = await host;
     final uri = Uri.http(h, path);
-    final client = io.HttpClient();
+    final client = io.HttpClient()..connectionTimeout = _timeout;
     final request = await client.deleteUrl(uri);
     await _attachAuth(request);
-    return request.close();
+    return request.close().timeout(_timeout);
   }
 }

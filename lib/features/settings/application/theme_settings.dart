@@ -5,8 +5,9 @@ class ThemeSettings extends ChangeNotifier {
   // Dependencies
   final SettingsStorage settingsStorage;
 
-  // State
-  ThemeMode _themeMode = ThemeMode.system;
+  // State. Defaults to dark so the first frame (before storage loads) and the
+  // very first launch both show dark mode.
+  ThemeMode _themeMode = ThemeMode.dark;
   bool _loaded = false;
 
   // Constructor
@@ -37,15 +38,16 @@ class ThemeSettings extends ChangeNotifier {
     final savedThemeMode = await settingsStorage.getThemeMode();
 
     switch (savedThemeMode) {
-      case 'dark':
-        _themeMode = ThemeMode.dark;
-        break;
       case 'light':
         _themeMode = ThemeMode.light;
         break;
       case 'system':
-      default:
         _themeMode = ThemeMode.system;
+        break;
+      case 'dark':
+      default:
+        // 'dark' or nothing saved yet (first launch) -> dark mode on.
+        _themeMode = ThemeMode.dark;
         break;
     }
 

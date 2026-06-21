@@ -80,8 +80,9 @@ class _CardsScreenState extends State<CardsScreen> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: _viewModel.loadCards,
-                  child: ListView.builder(
+                  child: ListView.separated(
                     itemCount: _viewModel.cards.length,
+                    separatorBuilder: (_, _) => const Divider(height: 1),
                     itemBuilder: (context, index) {
                       return _CardTile(card: _viewModel.cards[index]);
                     },
@@ -103,42 +104,25 @@ class _CardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final color = card.invalidated ? Colors.red : Colors.green;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(card.label, style: theme.textTheme.titleMedium),
-                ),
-                _TypeChip(type: card.type),
-                const SizedBox(width: 8),
-                Icon(
-                  card.invalidated ? Icons.block : Icons.check_circle,
-                  color: card.invalidated ? Colors.red : Colors.green,
-                  size: 20,
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(card.value, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),
-            if (card.validFrom != null || card.validUntil != null) ...[
-              const SizedBox(height: 8),
-              _ValidityRow(validFrom: card.validFrom, validUntil: card.validUntil),
-            ],
-            if (card.metadata != null && card.metadata!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              _MetadataSection(metadata: card.metadata!),
-            ],
-          ],
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: color.withValues(alpha: 0.15),
+        child: Icon(
+          card.invalidated ? Icons.block : Icons.check_circle,
+          color: color,
+          size: 20,
         ),
       ),
+      title: Text(card.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Text(
+        card.value,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontSize: 12, color: Colors.grey),
+      ),
+      trailing: _TypeChip(type: card.type),
     );
   }
 }
@@ -165,54 +149,6 @@ class _TypeChip extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
-    );
-  }
-}
-
-class _ValidityRow extends StatelessWidget {
-  final DateTime? validFrom;
-  final DateTime? validUntil;
-
-  const _ValidityRow({this.validFrom, this.validUntil});
-
-  String _fmt(DateTime dt) => '${dt.day}/${dt.month}/${dt.year}';
-
-  @override
-  Widget build(BuildContext context) {
-    final parts = <String>[];
-    if (validFrom != null) parts.add('From ${_fmt(validFrom!)}');
-    if (validUntil != null) parts.add('Until ${_fmt(validUntil!)}');
-
-    return Row(
-      children: [
-        const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-        const SizedBox(width: 4),
-        Text(parts.join('  ·  '), style: const TextStyle(fontSize: 12, color: Colors.grey)),
-      ],
-    );
-  }
-}
-
-class _MetadataSection extends StatelessWidget {
-  final Map<String, dynamic> metadata;
-
-  const _MetadataSection({required this.metadata});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: metadata.entries.map((e) {
-        return Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: Row(
-            children: [
-              Text('${e.key}: ', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey)),
-              Expanded(child: Text('${e.value}', style: const TextStyle(fontSize: 12))),
-            ],
-          ),
-        );
-      }).toList(),
     );
   }
 }

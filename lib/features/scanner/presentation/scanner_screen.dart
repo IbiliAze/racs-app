@@ -128,9 +128,13 @@ class _ScannerScreenState extends State<ScannerScreen>
                   bottom: false,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: _GlassBar(
-                      title: 'RACS Reader',
-                      textColor: barTextColor,
+                    child: ListenableBuilder(
+                      listenable: _viewModel,
+                      builder: (context, _) => _GlassBar(
+                        title: 'RACS Reader',
+                        textColor: barTextColor,
+                        isConnected: _viewModel.isConnected,
+                      ),
                     ),
                   ),
                 ),
@@ -267,8 +271,13 @@ class _ScanBox extends StatelessWidget {
 class _GlassBar extends StatelessWidget {
   final String title;
   final Color textColor;
+  final bool isConnected;
 
-  const _GlassBar({required this.title, required this.textColor});
+  const _GlassBar({
+    required this.title,
+    required this.textColor,
+    required this.isConnected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -279,26 +288,112 @@ class _GlassBar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.15),
+            color: const Color(0xFF3D6BC7).withValues(alpha: 0.30),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.qr_code_scanner, color: textColor, size: 22),
               const SizedBox(width: 10),
-              Text(
-                title,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
+              _StatusDot(isConnected: isConnected),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// A connection indicator: a green dot that pulses when connected, or a steady
+/// red dot when not.
+class _StatusDot extends StatefulWidget {
+  final bool isConnected;
+
+  const _StatusDot({required this.isConnected});
+
+  @override
+  State<_StatusDot> createState() => _StatusDotState();
+}
+
+class _StatusDotState extends State<_StatusDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    if (widget.isConnected) _controller.repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(_StatusDot oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Pulse only while connected; hold still otherwise.
+    if (widget.isConnected && !_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    } else if (!widget.isConnected && _controller.isAnimating) {
+      _controller.stop();
+      _controller.value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = widget.isConnected ? Colors.green : Colors.red;
+
+    if (!widget.isConnected) {
+      return _Dot(color: color, glow: 0);
+    }
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) => _Dot(color: color, glow: _controller.value),
+    );
+  }
+}
+
+class _Dot extends StatelessWidget {
+  final Color color;
+  final double glow;
+
+  const _Dot({required this.color, required this.glow});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.7 * glow),
+            blurRadius: 8 * glow,
+            spreadRadius: 3 * glow,
+          ),
+        ],
       ),
     );
   }

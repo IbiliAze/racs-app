@@ -105,25 +105,18 @@ class _LogsScreenState extends State<LogsScreen> {
                   onNext: _viewModel.canGoNext ? _viewModel.nextPage : null,
                 ),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: RefreshIndicator(
-                    onRefresh: _viewModel.loadLogs,
-                    child: ListView.builder(
-                      itemCount: _viewModel.logs.length,
-                      itemBuilder: (_, i) => _LogTile(log: _viewModel.logs[i]),
-                    ),
+                child: RefreshIndicator(
+                  onRefresh: _viewModel.loadLogs,
+                  child: ListView.separated(
+                    itemCount: _viewModel.logs.length,
+                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    itemBuilder: (_, i) => _LogTile(log: _viewModel.logs[i]),
                   ),
                 ),
               ),
             ],
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _viewModel.clearLogs,
-        tooltip: 'Clear logs',
-        child: const Icon(Icons.delete_sweep),
       ),
     );
   }
@@ -143,37 +136,22 @@ class _LogTile extends StatelessWidget {
       LogLevel.error => (Colors.red, Icons.error),
     };
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: color, size: 16),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    log.className,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: color,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    _fmt(log.timestamp),
-                    style: const TextStyle(fontSize: 10, color: Colors.grey),
-                  ),
-                ],
-              ),
-              Text(log.message, style: const TextStyle(fontSize: 12)),
-            ],
-          ),
-        ),
-      ],
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: color.withValues(alpha: 0.15),
+        child: Icon(icon, color: color, size: 20),
+      ),
+      title: Text(log.message, maxLines: 2, overflow: TextOverflow.ellipsis),
+      subtitle: Text(
+        log.className,
+        style: TextStyle(fontSize: 12, color: color),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: Text(
+        _fmt(log.timestamp),
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
     );
   }
 

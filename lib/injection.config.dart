@@ -196,6 +196,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i968.ScannerService>(),
         gh<_i467.CardService>(),
         gh<_i136.SecureStorage>(),
+        gh<_i723.ConnectionNotifier>(),
       ),
     );
     gh.factory<_i750.AuthViewModel>(

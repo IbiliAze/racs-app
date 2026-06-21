@@ -5,6 +5,7 @@ import 'package:reader/features/cards/application/card_service.dart';
 import 'package:reader/features/cards/domain/card.dart';
 import 'package:reader/features/scanner/application/scanner_service.dart';
 import 'package:reader/features/scanner/domain/scan_exception.dart';
+import 'package:reader/features/settings/application/connection_notifier.dart';
 
 enum ScanState { idle, scanning, success, failure }
 
@@ -13,8 +14,17 @@ class ScannerViewModel extends ChangeNotifier {
   final ScannerService _scannerService;
   final CardService _cardService;
   final SecureStorage _secureStorage;
+  final ConnectionNotifier _connectionNotifier;
 
-  ScannerViewModel(this._scannerService, this._cardService, this._secureStorage);
+  ScannerViewModel(
+    this._scannerService,
+    this._cardService,
+    this._secureStorage,
+    this._connectionNotifier,
+  ) {
+    // Forward connection changes so the UI's status dot updates live.
+    _connectionNotifier.addListener(notifyListeners);
+  }
 
   ScanState _state = ScanState.idle;
   Card? _scannedCard;
@@ -25,6 +35,7 @@ class ScannerViewModel extends ChangeNotifier {
   Card? get scannedCard => _scannedCard;
   String? get error => _error;
   bool get isDownloading => _isDownloading;
+  bool get isConnected => _connectionNotifier.isConnected;
 
   Future<void> onScan(String rawValue) async {
     _state = ScanState.scanning;
@@ -65,5 +76,11 @@ class ScannerViewModel extends ChangeNotifier {
     _scannedCard = null;
     _error = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _connectionNotifier.removeListener(notifyListeners);
+    super.dispose();
   }
 }

@@ -120,7 +120,7 @@ class _DlqScreenState extends State<DlqScreen> {
                   onRefresh: _viewModel.loadDlq,
                   child: ListView.separated(
                     itemCount: _viewModel.dlq.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    separatorBuilder: (_, _) => const Divider(height: 1),
                     itemBuilder: (context, index) {
                       final item = _viewModel.dlq[index];
                       return _DlqTile(

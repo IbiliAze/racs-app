@@ -36,7 +36,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
 
           return Padding(
-            padding: const EdgeInsets.all(24),
+            // Extra bottom space so the logout button clears the floating
+            // nav bar, which the shell draws content behind (extendBody).
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 110),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

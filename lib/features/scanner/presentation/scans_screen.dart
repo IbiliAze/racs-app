@@ -33,7 +33,7 @@ class _ScansScreenState extends State<ScansScreen> {
           }
           return ListView.separated(
             itemCount: scans.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, i) => _ScanTile(scan: scans[i]),
           );
         },
@@ -55,7 +55,7 @@ class _ScanTile extends StatelessWidget {
 
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: color.withOpacity(0.15),
+        backgroundColor: color.withValues(alpha: .15),
         child: Icon(Icons.qr_code, color: color, size: 20),
       ),
       title: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),

@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:reader/features/cards/application/card_service.dart';
 import 'package:reader/features/settings/application/theme_settings.dart';
 import 'package:reader/core/router/app_router.dart';
 import 'package:reader/features/auth/application/auth_notifier.dart';
+import 'package:reader/features/auth/application/auth_service.dart';
 import 'package:reader/features/scanner/application/mesh_service.dart';
 import 'package:reader/features/scanner/application/peer_sync_service.dart';
 import 'package:reader/features/settings/application/connection_notifier.dart';
@@ -24,12 +28,16 @@ void main() async {
     getIt<ConnectionNotifier>().setConnected(true);
 
     try {
+      // Validate the stored session against the server: getAuthReader hits
+      // an authenticated endpoint and throws on an expired/invalid token.
+      final reader = await getIt<AuthService>().getAuthReader();
       getIt<AuthNotifier>().setAuthenticated(true);
-      await getIt<MeshService>().connect();
+
+      // Sync in the background so first paint isn't blocked on the network.
+      unawaited(getIt<MeshService>().connect());
+      unawaited(getIt<CardService>().downloadCards(reader.ownerId));
     } catch (_) {
       getIt<AuthNotifier>().setAuthenticated(false);
-    } finally {
-
     }
   }
 

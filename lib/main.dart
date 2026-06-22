@@ -72,16 +72,9 @@ class MyApp extends StatelessWidget {
           seedColor: _seedBlue,
           brightness: Brightness.dark,
         ),
-        scaffoldBackgroundColor: const Color(0xFF07111F),
+        scaffoldBackgroundColor: const Color(0xFF121212),
       ).copyWith(
         textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
-        // Blue-tinted card surface so tiles read navy instead of plain grey.
-        cardTheme: const CardThemeData(color: Color(0xFF0F1E33)),
-        // Match the app bar to the navy cards.
-        appBarTheme: const AppBarThemeData(
-          backgroundColor: Color(0xFF0F1E33),
-          foregroundColor: Colors.white,
-        ),
       ),
     );
   }

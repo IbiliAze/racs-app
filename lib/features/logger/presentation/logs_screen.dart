@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reader/common/widgets/pagination_controls.dart';
@@ -46,17 +47,18 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   Future<void> _confirmClearAll() async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showCupertinoDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => CupertinoAlertDialog(
         title: const Text('Clear all?'),
         content: const Text('This will permanently remove all logs.'),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => ctx.pop(false),
             child: const Text('Cancel'),
           ),
-          FilledButton(
+          CupertinoDialogAction(
+            isDestructiveAction: true,
             onPressed: () => ctx.pop(true),
             child: const Text('Clear'),
           ),

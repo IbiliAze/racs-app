@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:reader/common/widgets/app_button.dart';
 import 'package:reader/features/settings/application/theme_settings.dart';
 import 'package:reader/features/settings/presentation/view_models/settings_view_model.dart';
 import 'package:reader/injection.dart';
@@ -67,17 +68,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                FilledButton(
+                AppButton(
                   onPressed: _viewModel.isTesting
                       ? null
                       : () => _viewModel.testConnections(_hostController.text.trim()),
-                  child: _viewModel.isTesting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Test & Save'),
+                  loading: _viewModel.isTesting,
+                  label: 'Test & Save',
                 ),
                 const SizedBox(height: 32),
                 _ConnectivityRow(label: 'HTTP', connected: _viewModel.isHttpConnected),

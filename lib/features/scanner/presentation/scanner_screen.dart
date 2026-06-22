@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:reader/common/widgets/app_button.dart';
+import 'package:reader/common/widgets/glass_card.dart';
 import 'package:reader/features/cards/domain/card.dart' as card_domain;
 import 'package:reader/features/scanner/view_models/scanner_view_model.dart';
 import 'package:reader/injection.dart';
@@ -134,6 +136,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                         title: 'RACS Reader',
                         textColor: barTextColor,
                         isConnected: _viewModel.isConnected,
+                        controller: _controller,
                       ),
                     ),
                   ),
@@ -272,45 +275,75 @@ class _GlassBar extends StatelessWidget {
   final String title;
   final Color textColor;
   final bool isConnected;
+  final MobileScannerController controller;
 
   const _GlassBar({
     required this.title,
     required this.textColor,
     required this.isConnected,
+    required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF3D6BC7).withValues(alpha: 0.30),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.qr_code_scanner, color: textColor, size: 22),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+    return GlassCard(
+      borderRadius: 16,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Row(
+        children: [
+          Icon(Icons.qr_code_scanner, color: textColor, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
               ),
-              _StatusDot(isConnected: isConnected),
-            ],
+            ),
           ),
-        ),
+          _TorchButton(controller: controller, color: textColor),
+          const SizedBox(width: 12),
+          _StatusDot(isConnected: isConnected),
+        ],
       ),
+    );
+  }
+}
+
+/// A small flash/torch toggle that reflects and controls the camera torch.
+class _TorchButton extends StatelessWidget {
+  final MobileScannerController controller;
+  final Color color;
+
+  const _TorchButton({required this.controller, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<MobileScannerState>(
+      valueListenable: controller,
+      builder: (context, state, _) {
+        final isOn = state.torchState == TorchState.on;
+        return GestureDetector(
+          onTap: () => controller.toggleTorch(),
+          behavior: HitTestBehavior.opaque,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isOn ? Colors.white : color.withValues(alpha: 0.12),
+            ),
+            child: Icon(
+              isOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+              size: 18,
+              color: isOn ? const Color(0xFFE8A100) : color,
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -415,24 +448,19 @@ class _BottomBar extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: FilledButton.icon(
+          child: AppButton(
             onPressed: isDownloading ? null : onDownload,
-            icon: isDownloading
-                ? const SizedBox(
-                    height: 16,
-                    width: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.download),
-            label: const Text('Download Scans'),
+            loading: isDownloading,
+            icon: Icons.download,
+            label: 'Download Scans',
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: FilledButton.tonalIcon(
+          child: AppButton.tonal(
             onPressed: onMyScans,
-            icon: const Icon(Icons.history),
-            label: const Text('My Scans'),
+            icon: Icons.history,
+            label: 'My Scans',
           ),
         ),
       ],
@@ -525,9 +553,10 @@ class _ResultCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 28),
-          FilledButton(
+          AppButton(
             onPressed: onDismiss,
-            child: const Text('Scan Again'),
+            label: 'Scan Again',
+            expand: false,
           ),
         ],
       ),

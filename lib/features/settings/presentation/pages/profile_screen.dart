@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reader/common/widgets/app_button.dart';
 import 'package:reader/features/settings/presentation/view_models/profile_view_model.dart';
 import 'package:reader/injection.dart';
 
@@ -61,17 +62,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   value: '${reader.createdAt.day}/${reader.createdAt.month}/${reader.createdAt.year}',
                 ),
                 const Spacer(),
-                FilledButton.icon(
-                  style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                AppButton.destructive(
                   onPressed: _viewModel.isLoggingOut ? null : _viewModel.logout,
-                  icon: _viewModel.isLoggingOut
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Icon(Icons.logout),
-                  label: const Text('Logout'),
+                  loading: _viewModel.isLoggingOut,
+                  icon: Icons.logout,
+                  label: 'Logout',
                 ),
               ],
             ),

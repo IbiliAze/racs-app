@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reader/common/widgets/app_button.dart';
 import 'package:reader/features/auth/presentation/view_models/auth_view_model.dart';
 import 'package:reader/injection.dart' show getIt;
 
@@ -85,15 +86,10 @@ class _AuthScreenState extends State<AuthScreen> {
                           (v == null || v.isEmpty) ? 'Required' : null,
                     ),
                     const SizedBox(height: 32),
-                    FilledButton(
+                    AppButton(
                       onPressed: _viewModel.isLoading ? null : _submit,
-                      child: _viewModel.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Sign in'),
+                      loading: _viewModel.isLoading,
+                      label: 'Sign in',
                     ),
                   ],
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:reader/common/widgets/list_divider.dart';
 import 'package:reader/common/widgets/pagination_controls.dart';
 import 'package:reader/features/dlq/domain/dlq_item.dart';
 import 'package:reader/features/dlq/view_models/dlq_view_model.dart';
@@ -79,7 +80,7 @@ class _DlqScreenState extends State<DlqScreen> {
           ListenableBuilder(
             listenable: _viewModel,
             builder: (context, _) => IconButton(
-              icon: const Icon(Icons.delete_sweep),
+              icon: const Icon(Icons.delete_rounded),
               tooltip: 'Clear all',
               onPressed: _viewModel.dlq.isEmpty ? null : _confirmClearAll,
             ),
@@ -122,7 +123,7 @@ class _DlqScreenState extends State<DlqScreen> {
                   onRefresh: _viewModel.loadDlq,
                   child: ListView.separated(
                     itemCount: _viewModel.dlq.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    separatorBuilder: (_, _) => const ListDivider(),
                     itemBuilder: (context, index) {
                       final item = _viewModel.dlq[index];
                       return _DlqTile(
@@ -175,7 +176,7 @@ class _DlqTile extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         color: Colors.red,
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: const Icon(Icons.delete_rounded, color: Colors.white),
       ),
       onDismissed: (_) => onDismiss(),
       child: ListTile(

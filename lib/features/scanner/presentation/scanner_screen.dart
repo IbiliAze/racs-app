@@ -115,10 +115,7 @@ class _ScannerScreenState extends State<ScannerScreen>
               // 3. The scan box outline with the moving red line.
               Positioned.fromRect(
                 rect: boxRect,
-                child: _ScanBox(
-                  radius: radius,
-                  animation: _lineController,
-                ),
+                child: _ScanBox(radius: radius, animation: _lineController),
               ),
 
               // 4. Glass card with the app name at the top.
@@ -217,7 +214,8 @@ class _CutoutClipper extends CustomClipper<Path> {
       box != oldClipper.box || radius != oldClipper.radius;
 }
 
-/// The rounded outline plus a red line that sweeps up and down.
+/// Rounded corner brackets framing the scan area, plus a soft glowing accent
+/// beam that sweeps up and down.
 class _ScanBox extends StatelessWidget {
   final double radius;
   final Animation<double> animation;
@@ -226,48 +224,150 @@ class _ScanBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 2),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: AnimatedBuilder(
-          animation: animation,
-          builder: (context, _) {
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                final y = animation.value * constraints.maxHeight;
-                return Stack(
-                  children: [
-                    Positioned(
-                      top: y - 1,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        height: 2,
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.red.withValues(alpha: 0.6),
-                              blurRadius: 8,
-                              spreadRadius: 1,
+    final accent = Theme.of(context).colorScheme.primary;
+
+    return Stack(
+      children: [
+        // The sweeping beam, clipped to the rounded box.
+        Positioned.fill(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(radius),
+            child: AnimatedBuilder(
+              animation: animation,
+              builder: (context, _) {
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    final y = animation.value * constraints.maxHeight;
+                    return Stack(
+                      children: [
+                        // Soft glow centered on the beam — fades above and
+                        // below so it reads as a band of light, not a bar.
+                        Positioned(
+                          top: y - 44,
+                          left: 0,
+                          right: 0,
+                          height: 88,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  accent.withValues(alpha: 0),
+                                  accent.withValues(alpha: 0.22),
+                                  accent.withValues(alpha: 0),
+                                ],
+                                stops: const [0, 0.5, 1],
+                              ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
+                        // Bright core line that fades out at the box edges.
+                        Positioned(
+                          top: y - 1,
+                          left: 0,
+                          right: 0,
+                          height: 2,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  accent.withValues(alpha: 0),
+                                  accent,
+                                  accent.withValues(alpha: 0),
+                                ],
+                                stops: const [0, 0.5, 1],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: accent.withValues(alpha: 0.7),
+                                  blurRadius: 12,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 );
               },
-            );
-          },
+            ),
+          ),
         ),
-      ),
+        // Corner brackets drawn on top of the beam.
+        Positioned.fill(
+          child: CustomPaint(
+            painter: _CornerBracketsPainter(
+              radius: radius,
+              color: Colors.white.withValues(alpha: 0.95),
+            ),
+          ),
+        ),
+      ],
     );
   }
+}
+
+/// Paints four rounded L-shaped brackets at the corners of the scan area,
+/// following the box's corner radius — a modern frame instead of a full border.
+class _CornerBracketsPainter extends CustomPainter {
+  final double radius;
+  final Color color;
+
+  /// Length of each bracket arm beyond the rounded corner.
+  static const double arm = 28;
+  static const double stroke = 4;
+
+  _CornerBracketsPainter({required this.radius, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final w = size.width;
+    final h = size.height;
+    final r = radius;
+    final corner = Radius.circular(r);
+
+    final topLeft = Path()
+      ..moveTo(0, r + arm)
+      ..lineTo(0, r)
+      ..arcToPoint(Offset(r, 0), radius: corner)
+      ..lineTo(r + arm, 0);
+
+    final topRight = Path()
+      ..moveTo(w - r - arm, 0)
+      ..lineTo(w - r, 0)
+      ..arcToPoint(Offset(w, r), radius: corner)
+      ..lineTo(w, r + arm);
+
+    final bottomRight = Path()
+      ..moveTo(w, h - r - arm)
+      ..lineTo(w, h - r)
+      ..arcToPoint(Offset(w - r, h), radius: corner)
+      ..lineTo(w - r - arm, h);
+
+    final bottomLeft = Path()
+      ..moveTo(r + arm, h)
+      ..lineTo(r, h)
+      ..arcToPoint(Offset(0, h - r), radius: corner)
+      ..lineTo(0, h - r - arm);
+
+    for (final path in [topLeft, topRight, bottomRight, bottomLeft]) {
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CornerBracketsPainter oldDelegate) =>
+      radius != oldDelegate.radius || color != oldDelegate.color;
 }
 
 /// Frosted glass bar showing the app name.
@@ -291,7 +391,7 @@ class _GlassBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
         children: [
-          Icon(Icons.qr_code_scanner, color: textColor, size: 22),
+          Icon(Icons.qr_code_rounded, color: textColor, size: 22),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -452,7 +552,7 @@ class _BottomBar extends StatelessWidget {
             onPressed: isDownloading ? null : onDownload,
             loading: isDownloading,
             icon: Icons.download,
-            label: 'Download Scans',
+            label: 'Download',
           ),
         ),
         const SizedBox(width: 12),
@@ -553,11 +653,7 @@ class _ResultCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 28),
-          AppButton(
-            onPressed: onDismiss,
-            label: 'Scan Again',
-            expand: false,
-          ),
+          AppButton(onPressed: onDismiss, label: 'Scan Again', expand: false),
         ],
       ),
     );

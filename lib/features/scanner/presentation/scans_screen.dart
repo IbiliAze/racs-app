@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reader/common/widgets/list_divider.dart';
 import 'package:reader/features/scanner/domain/scan_record.dart';
 import 'package:reader/features/scanner/view_models/scans_view_model.dart';
 import 'package:reader/injection.dart';
@@ -33,7 +34,7 @@ class _ScansScreenState extends State<ScansScreen> {
           }
           return ListView.separated(
             itemCount: scans.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const ListDivider(),
             itemBuilder: (context, i) => _ScanTile(scan: scans[i]),
           );
         },
@@ -56,7 +57,7 @@ class _ScanTile extends StatelessWidget {
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: color.withValues(alpha: .15),
-        child: Icon(Icons.qr_code, color: color, size: 20),
+        child: Icon(Icons.qr_code_rounded, color: color, size: 20),
       ),
       title: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(_flagLabel(scan.flag), style: TextStyle(color: color, fontSize: 12)),

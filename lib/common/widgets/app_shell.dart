@@ -36,7 +36,7 @@ class AppShell extends StatelessWidget {
               initialLocation: index == shell.currentIndex,
             ),
             tabs: const [
-              GButton(icon: Icons.qr_code_scanner_rounded, text: 'Scanner'),
+              GButton(icon: Icons.qr_code_rounded, text: 'Scanner'),
               GButton(icon: Icons.list_rounded, text: 'Logs'),
               GButton(icon: Icons.receipt_long_rounded, text: 'Cards'),
               GButton(icon: Icons.sync_problem_rounded, text: 'DLQ'),

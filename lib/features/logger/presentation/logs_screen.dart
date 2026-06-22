@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:reader/common/widgets/list_divider.dart';
 import 'package:reader/common/widgets/pagination_controls.dart';
 import 'package:reader/features/logger/domain/log.dart';
 import 'package:reader/features/logger/view_models/logs_view_model.dart';
@@ -77,7 +78,7 @@ class _LogsScreenState extends State<LogsScreen> {
           ListenableBuilder(
             listenable: _viewModel,
             builder: (context, _) => IconButton(
-              icon: const Icon(Icons.delete_sweep),
+              icon: const Icon(Icons.delete_rounded),
               tooltip: 'Clear all',
               onPressed: _viewModel.logs.isEmpty ? null : _confirmClearAll,
             ),
@@ -111,7 +112,7 @@ class _LogsScreenState extends State<LogsScreen> {
                   onRefresh: _viewModel.loadLogs,
                   child: ListView.separated(
                     itemCount: _viewModel.logs.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    separatorBuilder: (_, _) => const ListDivider(),
                     itemBuilder: (_, i) => _LogTile(log: _viewModel.logs[i]),
                   ),
                 ),

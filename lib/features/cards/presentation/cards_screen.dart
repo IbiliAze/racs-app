@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:reader/common/widgets/list_divider.dart';
 import 'package:reader/common/widgets/pagination_controls.dart';
 import 'package:reader/features/cards/domain/card.dart' as card_domain;
 import 'package:reader/features/cards/view_models/cards_view_model.dart';
@@ -82,7 +83,7 @@ class _CardsScreenState extends State<CardsScreen> {
                   onRefresh: _viewModel.loadCards,
                   child: ListView.separated(
                     itemCount: _viewModel.cards.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    separatorBuilder: (_, _) => const ListDivider(),
                     itemBuilder: (context, index) {
                       return _CardTile(card: _viewModel.cards[index]);
                     },

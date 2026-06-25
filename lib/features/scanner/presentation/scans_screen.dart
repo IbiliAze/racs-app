@@ -51,7 +51,7 @@ class _ScanTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _flagColor(scan.flag);
-    final label = scan.cardLabel ?? scan.scannedValue;
+    final label = scan.ticketLabel ?? scan.scannedValue;
     final time = _formatTime(scan.createdAt);
 
     return ListTile(
@@ -68,7 +68,7 @@ class _ScanTile extends StatelessWidget {
   Color _flagColor(String flag) => switch (flag) {
         'PASSED_OK' => Colors.green,
         'SIMILARITY_CHECK' => Colors.teal,
-        'UNKNOWN_CARD' => Colors.orange,
+        'UNKNOWN_TICKET' => Colors.orange,
         'DUPLICATE_ATTEMPT_MESH' || 'DUPLICATE_ATTEMPT_SERVER' => Colors.amber.shade700,
         'REJECTED' || 'INVALID_FORMAT' => Colors.red,
         _ => Colors.grey,

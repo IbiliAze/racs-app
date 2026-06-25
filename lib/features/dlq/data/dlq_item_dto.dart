@@ -5,14 +5,14 @@ class DlqItemDto {
   final int? id;
   final String scannedValue;
   final String flag;
-  final String? cardId;
+  final String? ticketId;
   final String createdAt;
 
   const DlqItemDto({
     this.id,
     required this.scannedValue,
     required this.flag,
-    this.cardId,
+    this.ticketId,
     required this.createdAt,
   });
 
@@ -20,7 +20,7 @@ class DlqItemDto {
     id: map['id'] as int?,
     scannedValue: map['scannedValue'] as String,
     flag: map['flag'] as String,
-    cardId: map['cardId'] as String?,
+    ticketId: map['ticketId'] as String?,
     createdAt: map['createdAt'] as String,
   );
 
@@ -28,7 +28,7 @@ class DlqItemDto {
     id: dlqItem.id,
     scannedValue: dlqItem.scannedValue,
     flag: dlqItem.flag.serverValue,
-    cardId: dlqItem.cardId,
+    ticketId: dlqItem.ticketId,
     createdAt: (dlqItem.createdAt ?? DateTime.now()).toIso8601String(),
   );
 
@@ -36,7 +36,7 @@ class DlqItemDto {
     if (id != null) 'id': id,
     'scannedValue': scannedValue,
     'flag': flag,
-    if (cardId != null) 'cardId': cardId,
+    if (ticketId != null) 'ticketId': ticketId,
     'createdAt': createdAt,
   };
 
@@ -47,7 +47,7 @@ class DlqItemDto {
       (f) => f.serverValue == flag,
       orElse: () => ScanFlag.unknown,
     ),
-    cardId: cardId,
+    ticketId: ticketId,
     createdAt: DateTime.parse(createdAt),
   );
 }

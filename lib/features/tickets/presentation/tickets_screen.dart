@@ -2,26 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reader/common/widgets/list_divider.dart';
 import 'package:reader/common/widgets/pagination_controls.dart';
-import 'package:reader/features/cards/domain/card.dart' as card_domain;
-import 'package:reader/features/cards/view_models/cards_view_model.dart';
+import 'package:reader/features/tickets/domain/ticket.dart' as ticket_domain;
+import 'package:reader/features/tickets/view_models/tickets_view_model.dart';
 import 'package:reader/injection.dart';
 
-class CardsScreen extends StatefulWidget {
-  const CardsScreen({super.key});
+class TicketsScreen extends StatefulWidget {
+  const TicketsScreen({super.key});
 
   @override
-  State<CardsScreen> createState() => _CardsScreenState();
+  State<TicketsScreen> createState() => _TicketsScreenState();
 }
 
-class _CardsScreenState extends State<CardsScreen> {
-  late final CardsViewModel _viewModel;
+class _TicketsScreenState extends State<TicketsScreen> {
+  late final TicketsViewModel _viewModel;
   late final GoRouter _router;
   bool _listenerAdded = false;
 
   @override
   void initState() {
     super.initState();
-    _viewModel = getIt<CardsViewModel>();
+    _viewModel = getIt<TicketsViewModel>();
   }
 
   @override
@@ -31,13 +31,13 @@ class _CardsScreenState extends State<CardsScreen> {
       _router = GoRouter.of(context);
       _router.routerDelegate.addListener(_onNavigate);
       _listenerAdded = true;
-      _viewModel.loadCards();
+      _viewModel.loadTickets();
     }
   }
 
   void _onNavigate() {
     final location = _router.routeInformationProvider.value.uri.path;
-    if (location == '/cards' && mounted) _viewModel.loadCards();
+    if (location == '/tickets' && mounted) _viewModel.loadTickets();
   }
 
   @override
@@ -49,7 +49,7 @@ class _CardsScreenState extends State<CardsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cards')),
+      appBar: AppBar(title: const Text('Tickets')),
       body: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {
@@ -61,8 +61,8 @@ class _CardsScreenState extends State<CardsScreen> {
             return Center(child: Text(_viewModel.error!));
           }
 
-          if (_viewModel.cards.isEmpty) {
-            return const Center(child: Text('No cards found.'));
+          if (_viewModel.tickets.isEmpty) {
+            return const Center(child: Text('No tickets found.'));
           }
 
           return Column(
@@ -80,12 +80,12 @@ class _CardsScreenState extends State<CardsScreen> {
                 ),
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: _viewModel.loadCards,
+                  onRefresh: _viewModel.loadTickets,
                   child: ListView.separated(
-                    itemCount: _viewModel.cards.length,
+                    itemCount: _viewModel.tickets.length,
                     separatorBuilder: (_, _) => const ListDivider(),
                     itemBuilder: (context, index) {
-                      return _CardTile(card: _viewModel.cards[index]);
+                      return _TicketTile(ticket: _viewModel.tickets[index]);
                     },
                   ),
                 ),
@@ -98,48 +98,48 @@ class _CardsScreenState extends State<CardsScreen> {
   }
 }
 
-class _CardTile extends StatelessWidget {
-  final card_domain.Card card;
+class _TicketTile extends StatelessWidget {
+  final ticket_domain.Ticket ticket;
 
-  const _CardTile({required this.card});
+  const _TicketTile({required this.ticket});
 
   @override
   Widget build(BuildContext context) {
-    final color = card.invalidated ? Colors.red : Colors.green;
+    final color = ticket.invalidated ? Colors.red : Colors.green;
 
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: color.withValues(alpha: 0.15),
         child: Icon(
-          card.invalidated ? Icons.block : Icons.check_circle,
+          ticket.invalidated ? Icons.block : Icons.check_circle,
           color: color,
           size: 20,
         ),
       ),
-      title: Text(card.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+      title: Text(ticket.label, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(
-        card.value,
+        ticket.value,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(fontSize: 12, color: Colors.grey),
       ),
-      trailing: _TypeChip(type: card.type),
+      trailing: _TypeChip(type: ticket.type),
     );
   }
 }
 
 class _TypeChip extends StatelessWidget {
-  final card_domain.CardType type;
+  final ticket_domain.TicketType type;
 
   const _TypeChip({required this.type});
 
   @override
   Widget build(BuildContext context) {
     final (label, color) = switch (type) {
-      card_domain.CardType.voucher => ('Voucher', Colors.purple),
-      card_domain.CardType.ticket => ('Ticket', Colors.blue),
-      card_domain.CardType.membership => ('Member', Colors.teal),
-      card_domain.CardType.pass => ('Pass', Colors.orange),
+      ticket_domain.TicketType.voucher => ('Voucher', Colors.purple),
+      ticket_domain.TicketType.ticket => ('Ticket', Colors.blue),
+      ticket_domain.TicketType.membership => ('Member', Colors.teal),
+      ticket_domain.TicketType.pass => ('Pass', Colors.orange),
     };
 
     return Container(

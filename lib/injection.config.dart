@@ -24,15 +24,6 @@ import 'package:reader/features/auth/data/auth_repository_impl.dart' as _i630;
 import 'package:reader/features/auth/domain/auth_repository.dart' as _i555;
 import 'package:reader/features/auth/presentation/view_models/auth_view_model.dart'
     as _i750;
-import 'package:reader/features/cards/application/card_service.dart' as _i467;
-import 'package:reader/features/cards/data/card_local_repository_impl.dart'
-    as _i490;
-import 'package:reader/features/cards/data/card_repository_impl.dart' as _i551;
-import 'package:reader/features/cards/domain/card_local_repository.dart'
-    as _i682;
-import 'package:reader/features/cards/domain/card_repository.dart' as _i465;
-import 'package:reader/features/cards/view_models/cards_view_model.dart'
-    as _i253;
 import 'package:reader/features/dlq/application/dlq_service.dart' as _i817;
 import 'package:reader/features/dlq/data/dlq_repository_impl.dart' as _i686;
 import 'package:reader/features/dlq/domain/dlq_repository.dart' as _i1016;
@@ -72,6 +63,17 @@ import 'package:reader/features/settings/presentation/view_models/profile_view_m
     as _i905;
 import 'package:reader/features/settings/presentation/view_models/settings_view_model.dart'
     as _i75;
+import 'package:reader/features/tickets/application/ticket_service.dart'
+    as _i79;
+import 'package:reader/features/tickets/data/ticket_local_repository_impl.dart'
+    as _i1049;
+import 'package:reader/features/tickets/data/ticket_repository_impl.dart'
+    as _i656;
+import 'package:reader/features/tickets/domain/ticket_local_repository.dart'
+    as _i581;
+import 'package:reader/features/tickets/domain/ticket_repository.dart' as _i891;
+import 'package:reader/features/tickets/view_models/tickets_view_model.dart'
+    as _i298;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -95,8 +97,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1016.DlqRepository>(
       () => _i686.DlqRepositoryImpl(gh<_i297.LocalDatabase>()),
     );
-    gh.factory<_i682.CardLocalRepository>(
-      () => _i490.CardLocalRepositoryImpl(gh<_i297.LocalDatabase>()),
+    gh.factory<_i581.TicketLocalRepository>(
+      () => _i1049.TicketLocalRepositoryImpl(gh<_i297.LocalDatabase>()),
     );
     gh.factory<_i829.LogRepository>(
       () => _i220.LogRepositoryImpl(gh<_i297.LocalDatabase>()),
@@ -137,35 +139,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i108.LoggerService>(
       () => _i108.LoggerService(gh<_i829.LogRepository>()),
     );
+    gh.factory<_i891.TicketRepository>(
+      () => _i656.TicketRepositoryImpl(gh<_i33.HttpClient>()),
+    );
     gh.lazySingleton<_i817.DlqService>(
       () => _i817.DlqService(
         gh<_i1016.DlqRepository>(),
         gh<_i634.ScanRemoteRepository>(),
       ),
     );
-    gh.lazySingleton<_i449.PeerSyncService>(
-      () => _i449.PeerSyncService(
-        gh<_i267.WebRtcMeshClient>(),
-        gh<_i682.CardLocalRepository>(),
-        gh<_i108.LoggerService>(),
-      ),
-    );
     gh.lazySingleton<_i42.AuthService>(
       () => _i42.AuthService(gh<_i555.AuthRepository>()),
-    );
-    gh.factory<_i465.CardRepository>(
-      () => _i551.CardRepositoryImpl(gh<_i33.HttpClient>()),
-    );
-    gh.lazySingleton<_i968.ScannerService>(
-      () => _i968.ScannerService(
-        gh<_i682.CardLocalRepository>(),
-        gh<_i108.LoggerService>(),
-        gh<_i817.DlqService>(),
-        gh<_i449.PeerSyncService>(),
-        gh<_i634.ScanRemoteRepository>(),
-        gh<_i741.ScanLocalRepository>(),
-        gh<_i136.SecureStorage>(),
-      ),
     );
     gh.factory<_i1015.LogsViewModel>(
       () => _i1015.LogsViewModel(gh<_i108.LoggerService>()),
@@ -181,27 +165,37 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i880.WebRtcClient>(),
       ),
     );
-    gh.lazySingleton<_i467.CardService>(
-      () => _i467.CardService(
-        gh<_i465.CardRepository>(),
-        gh<_i682.CardLocalRepository>(),
-        gh<_i108.LoggerService>(),
-      ),
-    );
     gh.lazySingleton<_i565.SettingsService>(
       () => _i565.SettingsService(gh<_i617.SettingsRepository>()),
     );
-    gh.factory<_i610.ScannerViewModel>(
-      () => _i610.ScannerViewModel(
-        gh<_i968.ScannerService>(),
-        gh<_i467.CardService>(),
-        gh<_i136.SecureStorage>(),
-        gh<_i723.ConnectionNotifier>(),
+    gh.lazySingleton<_i449.PeerSyncService>(
+      () => _i449.PeerSyncService(
+        gh<_i267.WebRtcMeshClient>(),
+        gh<_i581.TicketLocalRepository>(),
+        gh<_i108.LoggerService>(),
+      ),
+    );
+    gh.lazySingleton<_i79.TicketService>(
+      () => _i79.TicketService(
+        gh<_i891.TicketRepository>(),
+        gh<_i581.TicketLocalRepository>(),
+        gh<_i108.LoggerService>(),
       ),
     );
     gh.factory<_i750.AuthViewModel>(
       () =>
           _i750.AuthViewModel(gh<_i42.AuthService>(), gh<_i378.AuthNotifier>()),
+    );
+    gh.lazySingleton<_i968.ScannerService>(
+      () => _i968.ScannerService(
+        gh<_i581.TicketLocalRepository>(),
+        gh<_i108.LoggerService>(),
+        gh<_i817.DlqService>(),
+        gh<_i449.PeerSyncService>(),
+        gh<_i634.ScanRemoteRepository>(),
+        gh<_i741.ScanLocalRepository>(),
+        gh<_i136.SecureStorage>(),
+      ),
     );
     gh.factory<_i75.SettingsViewModel>(
       () => _i75.SettingsViewModel(
@@ -209,9 +203,17 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i723.ConnectionNotifier>(),
       ),
     );
-    gh.factory<_i253.CardsViewModel>(
-      () => _i253.CardsViewModel(
-        gh<_i467.CardService>(),
+    gh.factory<_i610.ScannerViewModel>(
+      () => _i610.ScannerViewModel(
+        gh<_i968.ScannerService>(),
+        gh<_i79.TicketService>(),
+        gh<_i136.SecureStorage>(),
+        gh<_i723.ConnectionNotifier>(),
+      ),
+    );
+    gh.factory<_i298.TicketsViewModel>(
+      () => _i298.TicketsViewModel(
+        gh<_i79.TicketService>(),
         gh<_i136.SecureStorage>(),
       ),
     );
@@ -221,7 +223,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i267.WebRtcMeshClient>(),
         gh<_i136.SecureStorage>(),
         gh<_i108.LoggerService>(),
-        gh<_i467.CardService>(),
+        gh<_i79.TicketService>(),
         gh<_i968.ScannerService>(),
       ),
     );

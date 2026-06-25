@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:reader/common/widgets/app_shell.dart';
 import 'package:reader/features/auth/application/auth_notifier.dart';
 import 'package:reader/features/auth/presentation/pages/auth_screen.dart';
-import 'package:reader/features/cards/presentation/cards_screen.dart';
+import 'package:reader/features/tickets/presentation/tickets_screen.dart';
 import 'package:reader/features/dlq/presentation/dlq_screen.dart';
 import 'package:reader/features/logger/presentation/logs_screen.dart';
 import 'package:reader/features/scanner/presentation/scanner_screen.dart';
@@ -57,8 +57,8 @@ final appRouter = GoRouter(
         ]),
         StatefulShellBranch(routes: [
           GoRoute(
-            path: '/cards',
-            builder: (context, state) => const CardsScreen(),
+            path: '/tickets',
+            builder: (context, state) => const TicketsScreen(),
           ),
         ]),
         StatefulShellBranch(routes: [

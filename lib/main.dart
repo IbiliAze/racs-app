@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:reader/features/cards/application/card_service.dart';
+import 'package:reader/features/tickets/application/ticket_service.dart';
 import 'package:reader/features/settings/application/theme_settings.dart';
 import 'package:reader/core/router/app_router.dart';
 import 'package:reader/features/auth/application/auth_notifier.dart';
@@ -35,7 +35,7 @@ void main() async {
 
       // Sync in the background so first paint isn't blocked on the network.
       unawaited(getIt<MeshService>().connect());
-      unawaited(getIt<CardService>().downloadCards(reader.ownerId));
+      unawaited(getIt<TicketService>().downloadTickets(reader.eventId));
     } catch (_) {
       getIt<AuthNotifier>().setAuthenticated(false);
     }

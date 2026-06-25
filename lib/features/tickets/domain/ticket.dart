@@ -1,11 +1,11 @@
-enum CardType { voucher, ticket, membership, pass }
+enum TicketType { voucher, ticket, membership, pass }
 
-class Card {
+class Ticket {
   final String id;
   final String value;
   final String label;
-  final CardType type;
-  final String ownerId;
+  final TicketType type;
+  final String eventId;
   final DateTime? validFrom;
   final DateTime? validUntil;
   final Map<String, dynamic>? metadata;
@@ -15,12 +15,12 @@ class Card {
   final bool used;
   final bool invalidated;
 
-  Card({
+  Ticket({
     required this.id,
     required this.value,
     required this.label,
     required this.type,
-    required this.ownerId,
+    required this.eventId,
     this.validFrom,
     this.validUntil,
     this.metadata,

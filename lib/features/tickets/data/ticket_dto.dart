@@ -1,13 +1,13 @@
 import 'dart:convert';
 
-import 'package:reader/features/cards/domain/card.dart';
+import 'package:reader/features/tickets/domain/ticket.dart';
 
-class CardDto {
+class TicketDto {
   final String id;
   final String value;
   final String label;
   final String type;
-  final String ownerId;
+  final String eventId;
   final String? validFrom;
   final String? validUntil;
   final Map<String, dynamic>? metadata;
@@ -17,12 +17,12 @@ class CardDto {
   final bool used;
   final bool invalidated;
 
-  const CardDto({
+  const TicketDto({
     required this.id,
     required this.value,
     required this.label,
     required this.type,
-    required this.ownerId,
+    required this.eventId,
     this.validFrom,
     this.validUntil,
     this.metadata,
@@ -33,13 +33,13 @@ class CardDto {
     required this.invalidated,
   });
 
-  factory CardDto.fromJson(Map<String, dynamic> json) {
-    return CardDto(
+  factory TicketDto.fromJson(Map<String, dynamic> json) {
+    return TicketDto(
       id: json['id'] as String,
       value: json['value'] as String,
       label: json['label'] as String,
       type: json['type'] as String? ?? 'voucher',
-      ownerId: json['ownerId'] as String,
+      eventId: json['eventId'] as String,
       validFrom: json['validFrom'] as String?,
       validUntil: json['validUntil'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
@@ -51,14 +51,14 @@ class CardDto {
     );
   }
 
-  factory CardDto.fromMap(Map<String, dynamic> map) {
+  factory TicketDto.fromMap(Map<String, dynamic> map) {
     final metaRaw = map['metadata'] as String?;
-    return CardDto(
+    return TicketDto(
       id: map['id'] as String,
       value: map['value'] as String,
       label: map['label'] as String,
       type: map['type'] as String,
-      ownerId: map['ownerId'] as String,
+      eventId: map['eventId'] as String,
       validFrom: map['validFrom'] as String?,
       validUntil: map['validUntil'] as String?,
       metadata: metaRaw != null ? jsonDecode(metaRaw) as Map<String, dynamic> : null,
@@ -70,21 +70,21 @@ class CardDto {
     );
   }
 
-  factory CardDto.fromDomain(Card card) {
-    return CardDto(
-      id: card.id,
-      value: card.value,
-      label: card.label,
-      type: card.type.name,
-      ownerId: card.ownerId,
-      validFrom: card.validFrom?.toIso8601String(),
-      validUntil: card.validUntil?.toIso8601String(),
-      metadata: card.metadata,
-      createdAt: card.createdAt.toIso8601String(),
-      updatedAt: card.updatedAt.toIso8601String(),
-      usedAt: card.usedAt?.toIso8601String(),
-      used: card.used,
-      invalidated: card.invalidated,
+  factory TicketDto.fromDomain(Ticket ticket) {
+    return TicketDto(
+      id: ticket.id,
+      value: ticket.value,
+      label: ticket.label,
+      type: ticket.type.name,
+      eventId: ticket.eventId,
+      validFrom: ticket.validFrom?.toIso8601String(),
+      validUntil: ticket.validUntil?.toIso8601String(),
+      metadata: ticket.metadata,
+      createdAt: ticket.createdAt.toIso8601String(),
+      updatedAt: ticket.updatedAt.toIso8601String(),
+      usedAt: ticket.usedAt?.toIso8601String(),
+      used: ticket.used,
+      invalidated: ticket.invalidated,
     );
   }
 
@@ -94,7 +94,7 @@ class CardDto {
       'value': value,
       'label': label,
       'type': type,
-      'ownerId': ownerId,
+      'eventId': eventId,
       'validFrom': validFrom,
       'validUntil': validUntil,
       'metadata': metadata != null ? jsonEncode(metadata) : null,
@@ -106,16 +106,16 @@ class CardDto {
     };
   }
 
-  Card toDomain() {
-    return Card(
+  Ticket toDomain() {
+    return Ticket(
       id: id,
       value: value,
       label: label,
-      type: CardType.values.firstWhere(
+      type: TicketType.values.firstWhere(
         (e) => e.name == type,
-        orElse: () => CardType.voucher,
+        orElse: () => TicketType.voucher,
       ),
-      ownerId: ownerId,
+      eventId: eventId,
       validFrom: validFrom != null ? DateTime.parse(validFrom!) : null,
       validUntil: validUntil != null ? DateTime.parse(validUntil!) : null,
       metadata: metadata,

@@ -190,7 +190,7 @@ class _DlqTile extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(
-          item.cardId != null ? 'Card: ${item.cardId}' : item.flag.serverValue,
+          item.ticketId != null ? 'Ticket: ${item.ticketId}' : item.flag.serverValue,
           style: const TextStyle(fontSize: 12, color: Colors.grey),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

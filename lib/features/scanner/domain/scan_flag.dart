@@ -1,6 +1,6 @@
 enum ScanFlag {
   passedOk,
-  unknownCard,
+  unknownTicket,
   invalidFormat,
   duplicateAttemptMesh,
   duplicateAttemptServer,
@@ -9,7 +9,7 @@ enum ScanFlag {
 
   String get serverValue => switch (this) {
     ScanFlag.passedOk => 'PASSED_OK',
-    ScanFlag.unknownCard => 'UNKNOWN_CARD',
+    ScanFlag.unknownTicket => 'UNKNOWN_TICKET',
     ScanFlag.invalidFormat => 'INVALID_FORMAT',
     ScanFlag.duplicateAttemptMesh => 'DUPLICATE_ATTEMPT_MESH',
     ScanFlag.duplicateAttemptServer => 'DUPLICATE_ATTEMPT_SERVER',

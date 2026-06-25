@@ -9,15 +9,15 @@ class UsedStep extends ScanStep {
 
   @override
   Future<ScanContext> execute(ScanContext context) async {
-    final card = context.card!;
-    await logger.debug('Checking used status for card: ${card.id}', className: 'UsedStep');
+    final ticket = context.ticket!;
+    await logger.debug('Checking used status for ticket: ${ticket.id}', className: 'UsedStep');
 
-    if (card.used) {
-      await logger.warning('Card already used: ${card.id} at ${card.usedAt}', className: 'UsedStep');
-      throw ScanException('Card has already been used', context, flag: ScanFlag.duplicateAttemptMesh);
+    if (ticket.used) {
+      await logger.warning('Ticket already used: ${ticket.id} at ${ticket.usedAt}', className: 'UsedStep');
+      throw ScanException('Ticket has already been used', context, flag: ScanFlag.duplicateAttemptMesh);
     }
 
-    await logger.info('Used check passed for card: ${card.id}', className: 'UsedStep');
+    await logger.info('Used check passed for ticket: ${ticket.id}', className: 'UsedStep');
     return context;
   }
 }

@@ -5,7 +5,7 @@ class ScanDto {
   final String readerId;
   final String scannedValue;
   final String flag;
-  final String? cardLabel;
+  final String? ticketLabel;
   final String createdAt;
 
   const ScanDto({
@@ -13,7 +13,7 @@ class ScanDto {
     required this.readerId,
     required this.scannedValue,
     required this.flag,
-    this.cardLabel,
+    this.ticketLabel,
     required this.createdAt,
   });
 
@@ -22,7 +22,7 @@ class ScanDto {
         readerId: map['readerId'] as String,
         scannedValue: map['scannedValue'] as String,
         flag: map['flag'] as String,
-        cardLabel: map['cardLabel'] as String?,
+        ticketLabel: map['ticketLabel'] as String?,
         createdAt: map['createdAt'] as String,
       );
 
@@ -31,7 +31,7 @@ class ScanDto {
         readerId: record.readerId,
         scannedValue: record.scannedValue,
         flag: record.flag,
-        cardLabel: record.cardLabel,
+        ticketLabel: record.ticketLabel,
         createdAt: record.createdAt.toIso8601String(),
       );
 
@@ -40,7 +40,7 @@ class ScanDto {
         'readerId': readerId,
         'scannedValue': scannedValue,
         'flag': flag,
-        'cardLabel': cardLabel,
+        'ticketLabel': ticketLabel,
         'createdAt': createdAt,
       };
 
@@ -49,7 +49,7 @@ class ScanDto {
         readerId: readerId,
         scannedValue: scannedValue,
         flag: flag,
-        cardLabel: cardLabel,
+        ticketLabel: ticketLabel,
         createdAt: DateTime.parse(createdAt),
       );
 }

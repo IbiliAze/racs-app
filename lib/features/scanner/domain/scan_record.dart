@@ -3,7 +3,7 @@ class ScanRecord {
   final String readerId;
   final String scannedValue;
   final String flag;
-  final String? cardLabel;
+  final String? ticketLabel;
   final DateTime createdAt;
 
   const ScanRecord({
@@ -11,7 +11,7 @@ class ScanRecord {
     required this.readerId,
     required this.scannedValue,
     required this.flag,
-    this.cardLabel,
+    this.ticketLabel,
     required this.createdAt,
   });
 }

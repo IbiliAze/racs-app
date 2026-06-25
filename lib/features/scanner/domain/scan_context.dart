@@ -1,13 +1,13 @@
-import 'package:reader/features/cards/domain/card.dart';
+import 'package:reader/features/tickets/domain/ticket.dart';
 
 class ScanContext {
   final String rawValue;
-  final Card? card;
+  final Ticket? ticket;
 
-  const ScanContext({required this.rawValue, this.card});
+  const ScanContext({required this.rawValue, this.ticket});
 
-  ScanContext copyWith({Card? card}) => ScanContext(
+  ScanContext copyWith({Ticket? ticket}) => ScanContext(
         rawValue: rawValue,
-        card: card ?? this.card,
+        ticket: ticket ?? this.ticket,
       );
 }

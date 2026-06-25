@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reader/core/storage/secure_storage.dart';
-import 'package:reader/features/cards/application/card_service.dart';
-import 'package:reader/features/cards/domain/card.dart';
+import 'package:reader/features/tickets/application/ticket_service.dart';
+import 'package:reader/features/tickets/domain/ticket.dart';
 import 'package:reader/features/scanner/application/scanner_service.dart';
 import 'package:reader/features/scanner/domain/scan_exception.dart';
 import 'package:reader/features/settings/application/connection_notifier.dart';
@@ -12,13 +12,13 @@ enum ScanState { idle, scanning, success, failure }
 @injectable
 class ScannerViewModel extends ChangeNotifier {
   final ScannerService _scannerService;
-  final CardService _cardService;
+  final TicketService _ticketService;
   final SecureStorage _secureStorage;
   final ConnectionNotifier _connectionNotifier;
 
   ScannerViewModel(
     this._scannerService,
-    this._cardService,
+    this._ticketService,
     this._secureStorage,
     this._connectionNotifier,
   ) {
@@ -27,25 +27,25 @@ class ScannerViewModel extends ChangeNotifier {
   }
 
   ScanState _state = ScanState.idle;
-  Card? _scannedCard;
+  Ticket? _scannedTicket;
   String? _error;
   bool _isDownloading = false;
 
   ScanState get state => _state;
-  Card? get scannedCard => _scannedCard;
+  Ticket? get scannedTicket => _scannedTicket;
   String? get error => _error;
   bool get isDownloading => _isDownloading;
   bool get isConnected => _connectionNotifier.isConnected;
 
   Future<void> onScan(String rawValue) async {
     _state = ScanState.scanning;
-    _scannedCard = null;
+    _scannedTicket = null;
     _error = null;
     notifyListeners();
 
     try {
       final context = await _scannerService.scan(rawValue);
-      _scannedCard = context.card;
+      _scannedTicket = context.ticket;
       _state = ScanState.success;
     } on ScanException catch (e) {
       _error = e.reason;
@@ -64,7 +64,7 @@ class ScannerViewModel extends ChangeNotifier {
 
     try {
       final profile = await _secureStorage.getProfile();
-      await _cardService.downloadCards(profile?['ownerId'] ?? '');
+      await _ticketService.downloadTickets(profile?['eventId'] ?? '');
     } finally {
       _isDownloading = false;
       notifyListeners();
@@ -73,7 +73,7 @@ class ScannerViewModel extends ChangeNotifier {
 
   void reset() {
     _state = ScanState.idle;
-    _scannedCard = null;
+    _scannedTicket = null;
     _error = null;
     notifyListeners();
   }

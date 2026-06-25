@@ -3,7 +3,7 @@ import 'package:reader/features/scanner/application/peer_sync_service.dart';
 import 'package:reader/features/scanner/domain/scan_context.dart';
 import 'package:reader/features/scanner/domain/scan_step.dart';
 
-/// Tells the other readers that this card is now used, so they mark it used in
+/// Tells the other readers that this ticket is now used, so they mark it used in
 /// their own databases and it can't be presented at another gate. Runs only on
 /// the success path — if an earlier step rejects the scan, the pipeline aborts
 /// before reaching here.
@@ -14,10 +14,10 @@ class BroadcastStep extends ScanStep {
 
   @override
   Future<ScanContext> execute(ScanContext context) async {
-    final card = context.card!;
-    await logger.info('Broadcasting card used to peers: ${card.id}', className: 'BroadcastStep');
+    final ticket = context.ticket!;
+    await logger.info('Broadcasting ticket used to peers: ${ticket.id}', className: 'BroadcastStep');
 
-    _peerSyncService.broadcastCardUsed(card.id);
+    _peerSyncService.broadcastTicketUsed(ticket.id);
     return context;
   }
 }

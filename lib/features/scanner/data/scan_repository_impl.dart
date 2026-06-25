@@ -18,7 +18,7 @@ class ScanRepositoryImpl implements ScanRemoteRepository {
   Future<void> submit({
     required String scannedValue,
     required ScanFlag flag,
-    String? cardId,
+    String? ticketId,
   }) async {
     final profile = await _secureStorage.getProfile();
     final readerId = profile?['id'] as String?;
@@ -28,7 +28,7 @@ class ScanRepositoryImpl implements ScanRemoteRepository {
       'readerId': readerId,
       'scannedValue': scannedValue,
       'flag': flag.serverValue,
-      'cardId': ?cardId,
+      'ticketId': ?ticketId,
     };
 
     final response = await _httpClient.post('/api/scan', body: jsonEncode(body));

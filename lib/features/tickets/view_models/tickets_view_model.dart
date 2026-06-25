@@ -1,27 +1,27 @@
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reader/core/storage/secure_storage.dart';
-import 'package:reader/features/cards/application/card_service.dart';
-import 'package:reader/features/cards/domain/card.dart';
-import 'package:reader/features/cards/domain/card_params.dart';
+import 'package:reader/features/tickets/application/ticket_service.dart';
+import 'package:reader/features/tickets/domain/ticket.dart';
+import 'package:reader/features/tickets/domain/ticket_params.dart';
 
 @injectable
-class CardsViewModel extends ChangeNotifier {
+class TicketsViewModel extends ChangeNotifier {
   static const pageSize = 30;
 
-  final CardService _cardService;
+  final TicketService _ticketService;
   final SecureStorage _secureStorage;
 
-  CardsViewModel(this._cardService, this._secureStorage);
+  TicketsViewModel(this._ticketService, this._secureStorage);
 
-  List<Card> _cards = [];
+  List<Ticket> _tickets = [];
   bool _isLoading = false;
   String? _error;
   int _page = 0;
   int _totalCount = 0;
-  String _ownerId = '';
+  String _eventId = '';
 
-  List<Card> get cards => _cards;
+  List<Ticket> get tickets => _tickets;
   bool get isLoading => _isLoading;
   String? get error => _error;
   int get page => _page;
@@ -29,7 +29,7 @@ class CardsViewModel extends ChangeNotifier {
   bool get canGoPrevious => _page > 0;
   bool get canGoNext => _page < totalPages - 1;
 
-  Future<void> loadCards() async {
+  Future<void> loadTickets() async {
     _page = 0;
     _isLoading = true;
     _error = null;
@@ -37,10 +37,10 @@ class CardsViewModel extends ChangeNotifier {
 
     try {
       final profile = await _secureStorage.getProfile();
-      _ownerId = profile?['ownerId'] ?? '';
-      _totalCount = await _cardService.countCards(_ownerId);
-      _cards = await _cardService.getCards(
-        CardParams(ownerId: _ownerId, page: _page, size: pageSize),
+      _eventId = profile?['eventId'] ?? '';
+      _totalCount = await _ticketService.countTickets(_eventId);
+      _tickets = await _ticketService.getTickets(
+        TicketParams(eventId: _eventId, page: _page, size: pageSize),
       );
     } catch (e) {
       _error = e.toString();
@@ -65,8 +65,8 @@ class CardsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _cards = await _cardService.getCards(
-        CardParams(ownerId: _ownerId, page: page, size: pageSize),
+      _tickets = await _ticketService.getTickets(
+        TicketParams(eventId: _eventId, page: page, size: pageSize),
       );
       _page = page;
     } catch (e) {

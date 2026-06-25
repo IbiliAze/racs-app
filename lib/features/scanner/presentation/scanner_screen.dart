@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:reader/common/widgets/app_button.dart';
 import 'package:reader/common/widgets/glass_card.dart';
-import 'package:reader/features/cards/domain/card.dart' as card_domain;
+import 'package:reader/features/tickets/domain/ticket.dart' as ticket_domain;
 import 'package:reader/features/scanner/view_models/scanner_view_model.dart';
 import 'package:reader/injection.dart';
 
@@ -118,7 +118,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                 child: _ScanBox(radius: radius, animation: _lineController),
               ),
 
-              // 4. Glass card with the app name at the top.
+              // 4. Glass ticket with the app name at the top.
               Positioned(
                 top: 0,
                 left: 0,
@@ -130,7 +130,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                     child: ListenableBuilder(
                       listenable: _viewModel,
                       builder: (context, _) => _GlassBar(
-                        title: 'RACS Reader',
+                        title: 'ACS Scanner',
                         textColor: barTextColor,
                         isConnected: _viewModel.isConnected,
                         controller: _controller,
@@ -171,13 +171,13 @@ class _ScannerScreenState extends State<ScannerScreen>
                       child: CircularProgressIndicator(color: Colors.white),
                     ),
                     ScanState.success => _ScrimOverlay(
-                      child: _ResultCard.success(
-                        card: _viewModel.scannedCard!,
+                      child: _ResultTicket.success(
+                        ticket: _viewModel.scannedTicket!,
                         onDismiss: _viewModel.reset,
                       ),
                     ),
                     ScanState.failure => _ScrimOverlay(
-                      child: _ResultCard.failure(
+                      child: _ResultTicket.failure(
                         reason: _viewModel.error!,
                         onDismiss: _viewModel.reset,
                       ),
@@ -585,14 +585,14 @@ class _ScrimOverlay extends StatelessWidget {
   }
 }
 
-class _ResultCard extends StatelessWidget {
+class _ResultTicket extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String title;
   final String? subtitle;
   final VoidCallback onDismiss;
 
-  const _ResultCard({
+  const _ResultTicket({
     required this.icon,
     required this.color,
     required this.title,
@@ -600,24 +600,24 @@ class _ResultCard extends StatelessWidget {
     required this.onDismiss,
   });
 
-  factory _ResultCard.success({
-    required card_domain.Card card,
+  factory _ResultTicket.success({
+    required ticket_domain.Ticket ticket,
     required VoidCallback onDismiss,
   }) {
-    return _ResultCard(
+    return _ResultTicket(
       icon: Icons.check_circle,
       color: Colors.green,
-      title: card.label,
-      subtitle: card.value,
+      title: ticket.label,
+      subtitle: ticket.value,
       onDismiss: onDismiss,
     );
   }
 
-  factory _ResultCard.failure({
+  factory _ResultTicket.failure({
     required String reason,
     required VoidCallback onDismiss,
   }) {
-    return _ResultCard(
+    return _ResultTicket(
       icon: Icons.cancel,
       color: Colors.red,
       title: reason,

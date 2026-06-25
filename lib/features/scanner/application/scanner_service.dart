@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:reader/core/storage/secure_storage.dart';
-import 'package:reader/features/cards/domain/card_local_repository.dart';
+import 'package:reader/features/tickets/domain/ticket_local_repository.dart';
 import 'package:reader/features/dlq/application/dlq_service.dart';
 import 'package:reader/features/dlq/domain/dlq_item.dart';
 import 'package:reader/features/logger/application/logger_service.dart';
@@ -14,7 +14,7 @@ import 'package:reader/features/scanner/domain/scan_remote_repository.dart';
 import 'package:reader/features/scanner/domain/scan_step.dart';
 import 'package:reader/features/scanner/domain/scan_submit_exception.dart';
 import 'package:reader/features/scanner/domain/steps/broadcast_step.dart';
-import 'package:reader/features/scanner/domain/steps/card_lookup_step.dart';
+import 'package:reader/features/scanner/domain/steps/ticket_lookup_step.dart';
 import 'package:reader/features/scanner/domain/steps/invalidation_step.dart';
 import 'package:reader/features/scanner/domain/steps/mark_used_step.dart';
 import 'package:reader/features/scanner/domain/steps/parse_step.dart';
@@ -24,7 +24,7 @@ import 'package:reader/features/scanner/domain/steps/validity_step.dart';
 
 @lazySingleton
 class ScannerService {
-  final CardLocalRepository _localRepository;
+  final TicketLocalRepository _localRepository;
   final LoggerService _loggerService;
   final PeerSyncService _peerSyncService;
   final DlqService _dlqService;
@@ -61,7 +61,7 @@ class ScannerService {
   Future<_PipelineOutcome> _runPipeline(String rawValue) async {
     final steps = <ScanStep>[
       ParseStep(_loggerService),
-      CardLookupStep(_localRepository, _loggerService),
+      TicketLookupStep(_localRepository, _loggerService),
       ValidityStep(_loggerService),
       InvalidationStep(_loggerService),
       UsedStep(_loggerService),
@@ -97,7 +97,7 @@ class ScannerService {
           readerId: readerId,
           scannedValue: rawValue,
           flag: flag.serverValue,
-          cardLabel: context.card?.label,
+          ticketLabel: context.ticket?.label,
           createdAt: DateTime.now(),
         ),
       );

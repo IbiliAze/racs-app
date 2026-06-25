@@ -9,15 +9,15 @@ class InvalidationStep extends ScanStep {
 
   @override
   Future<ScanContext> execute(ScanContext context) async {
-    final card = context.card!;
-    await logger.debug('Checking invalidation for card: ${card.id}', className: 'InvalidationStep');
+    final ticket = context.ticket!;
+    await logger.debug('Checking invalidation for ticket: ${ticket.id}', className: 'InvalidationStep');
 
-    if (card.invalidated) {
-      await logger.warning('Card is invalidated: ${card.id}', className: 'InvalidationStep');
-      throw ScanException('Card has been invalidated', context, flag: ScanFlag.rejected);
+    if (ticket.invalidated) {
+      await logger.warning('Ticket is invalidated: ${ticket.id}', className: 'InvalidationStep');
+      throw ScanException('Ticket has been invalidated', context, flag: ScanFlag.rejected);
     }
 
-    await logger.info('Invalidation check passed for card: ${card.id}', className: 'InvalidationStep');
+    await logger.info('Invalidation check passed for ticket: ${ticket.id}', className: 'InvalidationStep');
     return context;
   }
 }

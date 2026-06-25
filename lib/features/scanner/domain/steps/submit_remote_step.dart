@@ -20,9 +20,9 @@ class SubmitRemoteStep extends ScanStep {
 
   @override
   Future<ScanContext> execute(ScanContext context) async {
-    final card = context.card!;
+    final ticket = context.ticket!;
     await logger.debug(
-      'Submitting card in remote: ${card.id}',
+      'Submitting ticket in remote: ${ticket.id}',
       className: 'SubmitRemoteStep',
     );
 
@@ -30,25 +30,25 @@ class SubmitRemoteStep extends ScanStep {
       await _scanRemoteRepository.submit(
         scannedValue: context.rawValue,
         flag: ScanFlag.passedOk,
-        cardId: context.card?.id,
+        ticketId: context.ticket?.id,
       );
 
       await logger.info(
-        'Card submitted: ${card.id}',
+        'Ticket submitted: ${ticket.id}',
         className: 'SubmitRemoteStep',
       );
       return context;
     } on ScanSubmitException catch (e) {
       if (e.isRejected) {
         // 4xx — the server responded and denied the scan (e.g. duplicate).
-        // Reject the pipeline so the card is never marked used or broadcast.
+        // Reject the pipeline so the ticket is never marked used or broadcast.
         // The attempt is recorded locally via the flag on this exception.
         await logger.error(
           'Scan rejected by server: $e',
           className: 'SubmitRemoteStep',
         );
         throw ScanException(
-          'Card has already been used',
+          'Ticket has already been used',
           context,
           flag: ScanFlag.duplicateAttemptServer,
         );
@@ -78,7 +78,7 @@ class SubmitRemoteStep extends ScanStep {
     ScanContext context,
   ) {
     return _dlqService.insertItem(
-      DlqItem(scannedValue: rawValue, flag: flag, cardId: context.card?.id),
+      DlqItem(scannedValue: rawValue, flag: flag, ticketId: context.ticket?.id),
     );
   }
 }

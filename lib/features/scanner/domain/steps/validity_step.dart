@@ -9,20 +9,20 @@ class ValidityStep extends ScanStep {
 
   @override
   Future<ScanContext> execute(ScanContext context) async {
-    final card = context.card!;
+    final ticket = context.ticket!;
     final now = DateTime.now();
-    await logger.debug('Checking validity for card: ${card.id}', className: 'ValidityStep');
+    await logger.debug('Checking validity for ticket: ${ticket.id}', className: 'ValidityStep');
 
-    if (card.validFrom != null && now.isBefore(card.validFrom!)) {
-      await logger.warning('Card not yet valid: ${card.id}', className: 'ValidityStep');
-      throw ScanException('Card is not yet valid', context, flag: ScanFlag.rejected);
+    if (ticket.validFrom != null && now.isBefore(ticket.validFrom!)) {
+      await logger.warning('Ticket not yet valid: ${ticket.id}', className: 'ValidityStep');
+      throw ScanException('Ticket is not yet valid', context, flag: ScanFlag.rejected);
     }
-    if (card.validUntil != null && now.isAfter(card.validUntil!)) {
-      await logger.warning('Card expired: ${card.id}', className: 'ValidityStep');
-      throw ScanException('Card has expired', context, flag: ScanFlag.rejected);
+    if (ticket.validUntil != null && now.isAfter(ticket.validUntil!)) {
+      await logger.warning('Ticket expired: ${ticket.id}', className: 'ValidityStep');
+      throw ScanException('Ticket has expired', context, flag: ScanFlag.rejected);
     }
 
-    await logger.info('Validity check passed for card: ${card.id}', className: 'ValidityStep');
+    await logger.info('Validity check passed for ticket: ${ticket.id}', className: 'ValidityStep');
     return context;
   }
 }

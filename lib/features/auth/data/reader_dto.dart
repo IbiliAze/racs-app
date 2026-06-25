@@ -4,8 +4,8 @@ class ReaderDto {
   final String id;
   final String username;
   final bool inactive;
-  final String locationId;
-  final String ownerId;
+  final String venueId;
+  final String eventId;
   final String createdAt;
   final String updatedAt;
 
@@ -13,8 +13,8 @@ class ReaderDto {
     required this.id,
     required this.username,
     required this.inactive,
-    required this.locationId,
-    required this.ownerId,
+    required this.venueId,
+    required this.eventId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -24,8 +24,8 @@ class ReaderDto {
       id: json['id'] as String,
       username: json['username'] as String,
       inactive: json['inactive'] as bool,
-      locationId: json['locationId'] as String,
-      ownerId: json['ownerId'] as String,
+      venueId: json['venueId'] as String,
+      eventId: json['eventId'] as String,
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String,
     );
@@ -36,8 +36,8 @@ class ReaderDto {
       id: id,
       username: username,
       inactive: inactive,
-      locationId: locationId,
-      ownerId: ownerId,
+      venueId: venueId,
+      eventId: eventId,
       createdAt: DateTime.parse(createdAt),
       updatedAt: DateTime.parse(updatedAt),
     );

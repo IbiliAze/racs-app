@@ -6,7 +6,7 @@ import 'package:injectable/injectable.dart';
 import 'package:reader/core/network/webrtc_mesh_client.dart';
 import 'package:reader/core/network/websocket_client.dart';
 import 'package:reader/core/storage/secure_storage.dart';
-import 'package:reader/features/cards/application/card_service.dart';
+import 'package:reader/features/tickets/application/ticket_service.dart';
 import 'package:reader/features/logger/application/logger_service.dart';
 import 'package:reader/features/scanner/application/scanner_service.dart';
 
@@ -18,21 +18,21 @@ class MeshService {
   final WebRtcMeshClient _meshClient;
   final SecureStorage _secureStorage;
   final LoggerService _loggerService;
-  final CardService _cardService;
+  final TicketService _ticketService;
   final ScannerService _scannerService;
 
   StreamSubscription<String>? _wsSubscription;
   StreamSubscription<IceCandidateEvent>? _iceSubscription;
   StreamSubscription<bool>? _connectionSubscription;
   String? _readerId;
-  String? _ownerId;
+  String? _eventId;
 
   MeshService(
     this._wsClient,
     this._meshClient,
     this._secureStorage,
     this._loggerService,
-    this._cardService,
+    this._ticketService,
     this._scannerService,
   );
 
@@ -44,7 +44,7 @@ class MeshService {
       if (profile == null) return;
 
       _readerId = profile['id'] as String?;
-      _ownerId = profile['ownerId'] as String?;
+      _eventId = profile['eventId'] as String?;
 
       _wsSubscription ??= _wsClient.messages.listen(_onSignalingMessage);
       _iceSubscription ??= _meshClient.iceCandidates.listen(_onLocalIce);
@@ -62,10 +62,10 @@ class MeshService {
 
   void _sendJoin() {
     _wsClient.send(
-      jsonEncode({'type': 'join', 'readerId': _readerId, 'ownerId': _ownerId}),
+      jsonEncode({'type': 'join', 'readerId': _readerId, 'eventId': _eventId}),
     );
     _loggerService.info(
-      'Join (re)sent as $_readerId at $_ownerId',
+      'Join (re)sent as $_readerId at $_eventId',
       className: 'MeshService',
     );
   }
@@ -89,7 +89,7 @@ class MeshService {
         case 'peer_list':
           final peers = (data['peers'] as List).cast<String>();
           _loggerService.info(
-            'Mesh peers at owner: $peers',
+            'Mesh peers at events: $peers',
             className: 'MeshService',
           );
           for (final peerId in peers) {
@@ -138,18 +138,18 @@ class MeshService {
             ),
           );
 
-        case 'card_update':
+        case 'ticket_update':
           _loggerService.debug(
-            'Received card_update message from control plane',
+            'Received ticket_update message from control plane',
             className: 'MeshService',
           );
           final action = Action.values.byName(data['action'] as String);
-          final card = data['card'] as Map<String, dynamic>;
+          final ticket = data['ticket'] as Map<String, dynamic>;
           switch (action) {
             case Action.created || Action.updated:
-              await _cardService.upsertFromMap(card);
+              await _ticketService.upsertFromMap(ticket);
             case Action.deleted:
-              await _cardService.delete(card['id'] as String);
+              await _ticketService.delete(ticket['id'] as String);
           }
 
         case 'scan_update':

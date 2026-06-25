@@ -23,7 +23,7 @@ class DlqService {
       await _scanRemoteRepository.submit(
         scannedValue: dlqItem.scannedValue,
         flag: dlqItem.flag,
-        cardId: dlqItem.cardId,
+        ticketId: dlqItem.ticketId,
       );
     } on ScanSubmitException catch (e) {
       // 5xx / unreachable — keep the item and retry later. A 4xx is a

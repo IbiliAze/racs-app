@@ -36,9 +36,9 @@ class LocalDatabase {
       )
     ''');
     await db.execute('''
-      CREATE TABLE cards (
+      CREATE TABLE tickets (
         id TEXT PRIMARY KEY,
-        ownerId TEXT NOT NULL,
+        eventId TEXT NOT NULL,
         value TEXT NOT NULL,
         label TEXT NOT NULL,
         type TEXT NOT NULL,
@@ -58,7 +58,7 @@ class LocalDatabase {
         readerId TEXT NOT NULL,
         scannedValue TEXT NOT NULL,
         flag TEXT NOT NULL,
-        cardLabel TEXT,
+        ticketLabel TEXT,
         createdAt TEXT NOT NULL
       )
     ''');
@@ -67,7 +67,7 @@ class LocalDatabase {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         scannedValue TEXT NOT NULL,
         flag TEXT NOT NULL,
-        cardId TEXT,
+        ticketId TEXT,
         createdAt TEXT NOT NULL
       )
     ''');

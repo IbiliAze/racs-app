@@ -50,8 +50,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 24),
                 _ProfileRow(label: 'Username', value: reader.username),
                 _ProfileRow(label: 'Reader ID', value: reader.id),
-                _ProfileRow(label: 'Owner ID', value: reader.ownerId),
-                _ProfileRow(label: 'Location ID', value: reader.locationId),
+                _ProfileRow(label: 'Event ID', value: reader.eventId),
+                _ProfileRow(label: 'Venue ID', value: reader.venueId),
                 _ProfileRow(
                   label: 'Status',
                   value: reader.inactive ? 'Inactive' : 'Active',

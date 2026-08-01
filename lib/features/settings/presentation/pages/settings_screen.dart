@@ -1,0 +1,176 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:racs_reader/common/widgets/app_button.dart';
+import 'package:racs_reader/features/settings/application/theme_settings.dart';
+import 'package:racs_reader/features/settings/presentation/view_models/settings_view_model.dart';
+import 'package:racs_reader/injection.dart';
+
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  late final SettingsViewModel _viewModel;
+  late final TextEditingController _hostController;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = getIt<SettingsViewModel>();
+    _hostController = TextEditingController();
+    _loadHost();
+    _loadCampaigns();
+  }
+
+  @override
+  void dispose() {
+    _hostController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadHost() async {
+    await _viewModel.loadHost();
+    final host = _viewModel.host;
+    if (host == null) return;
+    _hostController.text = host;
+    await _viewModel.testConnections(host);
+  }
+
+  Future<void> _loadCampaigns() async {
+    await _viewModel.loadCampaignId();
+    await _viewModel.loadCampaigns();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            tooltip: 'Profile',
+            onPressed: () => context.push('/settings/profile'),
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: ListenableBuilder(
+          listenable: _viewModel,
+          builder: (context, _) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: _hostController,
+                  decoration: const InputDecoration(
+                    labelText: 'API Host',
+                    hintText: '192.168.1.1',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                AppButton(
+                  onPressed: _viewModel.isTesting
+                      ? null
+                      : () => _viewModel.testConnections(
+                          _hostController.text.trim(),
+                        ),
+                  loading: _viewModel.isTesting,
+                  label: 'Test & Save',
+                ),
+                const SizedBox(height: 32),
+                _ConnectivityRow(
+                  label: 'HTTP',
+                  connected: _viewModel.isHttpConnected,
+                ),
+                _ConnectivityRow(
+                  label: 'WebSocket',
+                  connected: _viewModel.isWsConnected,
+                ),
+                _ConnectivityRow(
+                  label: 'STUN',
+                  connected: _viewModel.isStunConnected,
+                ),
+                const Divider(height: 32),
+                DropdownButtonFormField<String>(
+                  // initialValue only applies when the field's state is created,
+                  // so recreate it when the stored id or campaign list changes.
+                  key: ValueKey(
+                    '${_viewModel.campaignId}:${_viewModel.campaigns.length}',
+                  ),
+                  // Guard against a stored id that no longer exists on the server.
+                  initialValue:
+                      _viewModel.campaigns.any(
+                        (e) => e.id == _viewModel.campaignId,
+                      )
+                      ? _viewModel.campaignId
+                      : null,
+                  decoration: InputDecoration(
+                    labelText: 'Campaign',
+                    errorText: _viewModel.campaignsError,
+                  ),
+                  hint: Text(
+                    _viewModel.isLoadingCampaigns
+                        ? 'Loading campaigns…'
+                        : 'Select an campaign',
+                  ),
+                  items: _viewModel.campaigns
+                      .map(
+                        (e) =>
+                            DropdownMenuItem(value: e.id, child: Text(e.name)),
+                      )
+                      .toList(),
+                  onChanged: (id) {
+                    if (id != null) _viewModel.selectCampaign(id);
+                  },
+                ),
+                const Divider(height: 32),
+                Consumer<ThemeSettings>(
+                  builder: (context, theme, _) => SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Dark mode'),
+                    secondary: const Icon(Icons.dark_mode_outlined),
+                    value: theme.isDarkMode,
+                    onChanged: theme.toggleDarkMode,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ConnectivityRow extends StatelessWidget {
+  final String label;
+  final bool? connected;
+
+  const _ConnectivityRow({required this.label, required this.connected});
+
+  @override
+  Widget build(BuildContext context) {
+    final icon = switch (connected) {
+      null => const Icon(Icons.circle_outlined, color: Colors.grey),
+      true => const Icon(Icons.check_circle, color: Colors.green),
+      false => const Icon(Icons.cancel, color: Colors.red),
+    };
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          icon,
+          const SizedBox(width: 12),
+          Text(label, style: Theme.of(context).textTheme.bodyLarge),
+        ],
+      ),
+    );
+  }
+}

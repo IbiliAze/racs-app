@@ -10,11 +10,7 @@ import 'package:racs_reader/features/logger/application/logger_service.dart';
 
 import 'card_service_test.mocks.dart';
 
-@GenerateMocks([
-  CardRepository,
-  CardLocalRepository,
-  LoggerService,
-])
+@GenerateMocks([CardRepository, CardLocalRepository, LoggerService])
 void main() {
   late MockCardRepository remote;
   late MockCardLocalRepository local;
@@ -72,22 +68,17 @@ void main() {
       await service.downloadCards('campaign-1');
 
       final params =
-      verify(remote.getCards(captureAny)).captured.single as CardParams;
+          verify(remote.getCards(captureAny)).captured.single as CardParams;
 
       expect(params.campaignId, 'campaign-1');
       verify(local.upsertAll(cards)).called(1);
       verify(
-        logger.info(
-          'Synced from remote',
-          className: 'CardSyncService',
-        ),
+        logger.info('Synced from remote', className: 'CardSyncService'),
       ).called(1);
     });
 
     test('does not write locally when the download fails', () async {
-      when(
-        remote.getCards(any),
-      ).thenThrow(StateError('network unavailable'));
+      when(remote.getCards(any)).thenThrow(StateError('network unavailable'));
 
       await service.downloadCards('campaign-1');
 
@@ -98,9 +89,7 @@ void main() {
           className: 'CardSyncService',
         ),
       ).called(1);
-      verifyNever(
-        logger.info(any, className: anyNamed('className')),
-      );
+      verifyNever(logger.info(any, className: anyNamed('className')));
     });
 
     test('does not report success when local persistence fails', () async {
@@ -111,14 +100,9 @@ void main() {
 
       await service.downloadCards('campaign-1');
 
-      verifyNever(
-        logger.info(any, className: anyNamed('className')),
-      );
+      verifyNever(logger.info(any, className: anyNamed('className')));
       verify(
-        logger.error(
-          'Bad state: database full',
-          className: 'CardSyncService',
-        ),
+        logger.error('Bad state: database full', className: 'CardSyncService'),
       ).called(1);
     });
   });

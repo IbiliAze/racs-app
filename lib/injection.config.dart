@@ -11,84 +11,84 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
-import 'package:racs_reader/core/network/http_client.dart' as _i33;
-import 'package:racs_reader/core/network/webrtc_client.dart' as _i880;
-import 'package:racs_reader/core/network/webrtc_mesh_client.dart' as _i267;
-import 'package:racs_reader/core/network/websocket_client.dart' as _i461;
-import 'package:racs_reader/core/storage/local_database.dart' as _i297;
-import 'package:racs_reader/core/storage/secure_storage.dart' as _i136;
-import 'package:racs_reader/core/storage/settings_storage.dart' as _i126;
+import 'package:racs_reader/core/network/http_client.dart' as _i627;
+import 'package:racs_reader/core/network/webrtc_client.dart' as _i946;
+import 'package:racs_reader/core/network/webrtc_mesh_client.dart' as _i773;
+import 'package:racs_reader/core/network/websocket_client.dart' as _i867;
+import 'package:racs_reader/core/storage/local_database.dart' as _i383;
+import 'package:racs_reader/core/storage/secure_storage.dart' as _i570;
+import 'package:racs_reader/core/storage/settings_storage.dart' as _i222;
 import 'package:racs_reader/features/auth/application/auth_notifier.dart'
-    as _i378;
+    as _i890;
 import 'package:racs_reader/features/auth/application/auth_service.dart'
-    as _i42;
+    as _i599;
 import 'package:racs_reader/features/auth/data/auth_repository_impl.dart'
-    as _i630;
-import 'package:racs_reader/features/auth/domain/auth_repository.dart' as _i555;
+    as _i727;
+import 'package:racs_reader/features/auth/domain/auth_repository.dart' as _i727;
 import 'package:racs_reader/features/auth/presentation/view_models/auth_view_model.dart'
-    as _i750;
-import 'package:racs_reader/features/dlq/application/dlq_service.dart' as _i817;
-import 'package:racs_reader/features/dlq/data/dlq_repository_impl.dart'
-    as _i686;
-import 'package:racs_reader/features/dlq/domain/dlq_repository.dart' as _i1016;
-import 'package:racs_reader/features/dlq/view_models/dlq_view_model.dart'
-    as _i627;
+    as _i178;
 import 'package:racs_reader/features/campaigns/application/campaign_service.dart'
-    as _i1053;
+    as _i915;
 import 'package:racs_reader/features/campaigns/data/campaign_repository_impl.dart'
-    as _i447;
+    as _i195;
 import 'package:racs_reader/features/campaigns/domain/campaign_repository.dart'
-    as _i76;
-import 'package:racs_reader/features/logger/application/logger_service.dart'
-    as _i108;
-import 'package:racs_reader/features/logger/data/log_repository_impl.dart'
-    as _i220;
-import 'package:racs_reader/features/logger/domain/log_repository.dart'
-    as _i829;
-import 'package:racs_reader/features/logger/view_models/logs_view_model.dart'
-    as _i1015;
-import 'package:racs_reader/features/scanner/application/mesh_service.dart'
-    as _i265;
-import 'package:racs_reader/features/scanner/application/peer_sync_service.dart'
-    as _i449;
-import 'package:racs_reader/features/scanner/application/scanner_service.dart'
-    as _i968;
-import 'package:racs_reader/features/scanner/data/scan_local_repository_impl.dart'
-    as _i1018;
-import 'package:racs_reader/features/scanner/data/scan_repository_impl.dart'
-    as _i360;
-import 'package:racs_reader/features/scanner/domain/scan_local_repository.dart'
-    as _i741;
-import 'package:racs_reader/features/scanner/domain/scan_remote_repository.dart'
-    as _i634;
-import 'package:racs_reader/features/scanner/view_models/scanner_view_model.dart'
-    as _i610;
-import 'package:racs_reader/features/scanner/view_models/scans_view_model.dart'
-    as _i685;
-import 'package:racs_reader/features/settings/application/connection_notifier.dart'
-    as _i723;
-import 'package:racs_reader/features/settings/application/settings_service.dart'
-    as _i565;
-import 'package:racs_reader/features/settings/data/settings_repository_impl.dart'
-    as _i198;
-import 'package:racs_reader/features/settings/domain/settings_repository.dart'
-    as _i617;
-import 'package:racs_reader/features/settings/presentation/view_models/profile_view_model.dart'
-    as _i905;
-import 'package:racs_reader/features/settings/presentation/view_models/settings_view_model.dart'
-    as _i75;
+    as _i28;
 import 'package:racs_reader/features/cards/application/card_service.dart'
-    as _i79;
+    as _i378;
 import 'package:racs_reader/features/cards/data/card_local_repository_impl.dart'
-    as _i1049;
+    as _i701;
 import 'package:racs_reader/features/cards/data/card_repository_impl.dart'
-    as _i656;
+    as _i750;
 import 'package:racs_reader/features/cards/domain/card_local_repository.dart'
-    as _i581;
+    as _i303;
 import 'package:racs_reader/features/cards/domain/card_repository.dart'
-    as _i891;
+    as _i483;
 import 'package:racs_reader/features/cards/view_models/cards_view_model.dart'
-    as _i298;
+    as _i225;
+import 'package:racs_reader/features/dlq/application/dlq_service.dart' as _i450;
+import 'package:racs_reader/features/dlq/data/dlq_repository_impl.dart'
+    as _i644;
+import 'package:racs_reader/features/dlq/domain/dlq_repository.dart' as _i158;
+import 'package:racs_reader/features/dlq/view_models/dlq_view_model.dart'
+    as _i455;
+import 'package:racs_reader/features/logger/application/logger_service.dart'
+    as _i621;
+import 'package:racs_reader/features/logger/data/log_repository_impl.dart'
+    as _i108;
+import 'package:racs_reader/features/logger/domain/log_repository.dart'
+    as _i754;
+import 'package:racs_reader/features/logger/view_models/logs_view_model.dart'
+    as _i444;
+import 'package:racs_reader/features/scanner/application/mesh_service.dart'
+    as _i375;
+import 'package:racs_reader/features/scanner/application/peer_sync_service.dart'
+    as _i630;
+import 'package:racs_reader/features/scanner/application/scanner_service.dart'
+    as _i660;
+import 'package:racs_reader/features/scanner/data/scan_local_repository_impl.dart'
+    as _i704;
+import 'package:racs_reader/features/scanner/data/scan_repository_impl.dart'
+    as _i643;
+import 'package:racs_reader/features/scanner/domain/scan_local_repository.dart'
+    as _i1059;
+import 'package:racs_reader/features/scanner/domain/scan_remote_repository.dart'
+    as _i59;
+import 'package:racs_reader/features/scanner/view_models/scanner_view_model.dart'
+    as _i272;
+import 'package:racs_reader/features/scanner/view_models/scans_view_model.dart'
+    as _i564;
+import 'package:racs_reader/features/settings/application/connection_notifier.dart'
+    as _i1056;
+import 'package:racs_reader/features/settings/application/settings_service.dart'
+    as _i516;
+import 'package:racs_reader/features/settings/data/settings_repository_impl.dart'
+    as _i326;
+import 'package:racs_reader/features/settings/domain/settings_repository.dart'
+    as _i800;
+import 'package:racs_reader/features/settings/presentation/view_models/profile_view_model.dart'
+    as _i786;
+import 'package:racs_reader/features/settings/presentation/view_models/settings_view_model.dart'
+    as _i12;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -97,159 +97,161 @@ extension GetItInjectableX on _i174.GetIt {
     _i526.EnvironmentFilter? environmentFilter,
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
-    gh.lazySingleton<_i880.WebRtcClient>(() => _i880.WebRtcClient());
-    gh.lazySingleton<_i267.WebRtcMeshClient>(() => _i267.WebRtcMeshClient());
-    gh.lazySingleton<_i297.LocalDatabase>(() => _i297.LocalDatabase());
-    gh.lazySingleton<_i136.SecureStorage>(() => _i136.SecureStorage());
-    gh.lazySingleton<_i126.SettingsStorage>(() => _i126.SettingsStorage());
-    gh.lazySingleton<_i378.AuthNotifier>(() => _i378.AuthNotifier());
-    gh.lazySingleton<_i723.ConnectionNotifier>(
-      () => _i723.ConnectionNotifier(),
+    gh.lazySingleton<_i946.WebRtcClient>(() => _i946.WebRtcClient());
+    gh.lazySingleton<_i773.WebRtcMeshClient>(() => _i773.WebRtcMeshClient());
+    gh.lazySingleton<_i383.LocalDatabase>(() => _i383.LocalDatabase());
+    gh.lazySingleton<_i570.SecureStorage>(() => _i570.SecureStorage());
+    gh.lazySingleton<_i222.SettingsStorage>(() => _i222.SettingsStorage());
+    gh.lazySingleton<_i890.AuthNotifier>(() => _i890.AuthNotifier());
+    gh.lazySingleton<_i1056.ConnectionNotifier>(
+      () => _i1056.ConnectionNotifier(),
     );
-    gh.factory<_i741.ScanLocalRepository>(
-      () => _i1018.ScanLocalRepositoryImpl(gh<_i297.LocalDatabase>()),
+    gh.factory<_i1059.ScanLocalRepository>(
+      () => _i704.ScanLocalRepositoryImpl(gh<_i383.LocalDatabase>()),
     );
-    gh.factory<_i1016.DlqRepository>(
-      () => _i686.DlqRepositoryImpl(gh<_i297.LocalDatabase>()),
+    gh.factory<_i564.ScansViewModel>(
+      () => _i564.ScansViewModel(gh<_i1059.ScanLocalRepository>()),
     );
-    gh.factory<_i581.CardLocalRepository>(
-      () => _i1049.CardLocalRepositoryImpl(gh<_i297.LocalDatabase>()),
-    );
-    gh.factory<_i829.LogRepository>(
-      () => _i220.LogRepositoryImpl(gh<_i297.LocalDatabase>()),
-    );
-    gh.lazySingleton<_i33.HttpClient>(
-      () => _i33.HttpClient(
-        gh<_i126.SettingsStorage>(),
-        gh<_i136.SecureStorage>(),
+    gh.factory<_i786.ProfileViewModel>(
+      () => _i786.ProfileViewModel(
+        gh<_i570.SecureStorage>(),
+        gh<_i890.AuthNotifier>(),
       ),
     );
-    gh.lazySingleton<_i461.WebSocketClient>(
-      () => _i461.WebSocketClient(
-        gh<_i126.SettingsStorage>(),
-        gh<_i136.SecureStorage>(),
+    gh.factory<_i754.LogRepository>(
+      () => _i108.LogRepositoryImpl(gh<_i383.LocalDatabase>()),
+    );
+    gh.factory<_i158.DlqRepository>(
+      () => _i644.DlqRepositoryImpl(gh<_i383.LocalDatabase>()),
+    );
+    gh.factory<_i303.CardLocalRepository>(
+      () => _i701.CardLocalRepositoryImpl(gh<_i383.LocalDatabase>()),
+    );
+    gh.lazySingleton<_i627.HttpClient>(
+      () => _i627.HttpClient(
+        gh<_i222.SettingsStorage>(),
+        gh<_i570.SecureStorage>(),
       ),
     );
-    gh.factory<_i685.ScansViewModel>(
-      () => _i685.ScansViewModel(gh<_i741.ScanLocalRepository>()),
-    );
-    gh.factory<_i555.AuthRepository>(
-      () => _i630.AuthRepositoryImpl(
-        gh<_i33.HttpClient>(),
-        gh<_i136.SecureStorage>(),
+    gh.lazySingleton<_i867.WebSocketClient>(
+      () => _i867.WebSocketClient(
+        gh<_i222.SettingsStorage>(),
+        gh<_i570.SecureStorage>(),
       ),
     );
-    gh.factory<_i905.ProfileViewModel>(
-      () => _i905.ProfileViewModel(
-        gh<_i136.SecureStorage>(),
-        gh<_i378.AuthNotifier>(),
+    gh.lazySingleton<_i621.LoggerService>(
+      () => _i621.LoggerService(gh<_i754.LogRepository>()),
+    );
+    gh.factory<_i483.CardRepository>(
+      () => _i750.CardRepositoryImpl(gh<_i627.HttpClient>()),
+    );
+    gh.factory<_i727.AuthRepository>(
+      () => _i727.AuthRepositoryImpl(
+        gh<_i627.HttpClient>(),
+        gh<_i570.SecureStorage>(),
       ),
     );
-    gh.factory<_i634.ScanRemoteRepository>(
-      () => _i360.ScanRepositoryImpl(
-        gh<_i33.HttpClient>(),
-        gh<_i136.SecureStorage>(),
+    gh.factory<_i28.CampaignRepository>(
+      () => _i195.CampaignRepositoryImpl(gh<_i627.HttpClient>()),
+    );
+    gh.factory<_i800.SettingsRepository>(
+      () => _i326.SettingsRepositoryImpl(
+        gh<_i222.SettingsStorage>(),
+        gh<_i627.HttpClient>(),
+        gh<_i867.WebSocketClient>(),
+        gh<_i946.WebRtcClient>(),
       ),
     );
-    gh.lazySingleton<_i108.LoggerService>(
-      () => _i108.LoggerService(gh<_i829.LogRepository>()),
-    );
-    gh.factory<_i891.CardRepository>(
-      () => _i656.CardRepositoryImpl(gh<_i33.HttpClient>()),
-    );
-    gh.lazySingleton<_i817.DlqService>(
-      () => _i817.DlqService(
-        gh<_i1016.DlqRepository>(),
-        gh<_i634.ScanRemoteRepository>(),
+    gh.lazySingleton<_i630.PeerSyncService>(
+      () => _i630.PeerSyncService(
+        gh<_i773.WebRtcMeshClient>(),
+        gh<_i303.CardLocalRepository>(),
+        gh<_i621.LoggerService>(),
       ),
     );
-    gh.lazySingleton<_i42.AuthService>(
-      () => _i42.AuthService(gh<_i555.AuthRepository>()),
+    gh.lazySingleton<_i599.AuthService>(
+      () => _i599.AuthService(gh<_i727.AuthRepository>()),
     );
-    gh.factory<_i76.CampaignRepository>(
-      () => _i447.CampaignRepositoryImpl(gh<_i33.HttpClient>()),
+    gh.factory<_i444.LogsViewModel>(
+      () => _i444.LogsViewModel(gh<_i621.LoggerService>()),
     );
-    gh.factory<_i1015.LogsViewModel>(
-      () => _i1015.LogsViewModel(gh<_i108.LoggerService>()),
-    );
-    gh.factory<_i627.DlqViewModel>(
-      () => _i627.DlqViewModel(gh<_i817.DlqService>()),
-    );
-    gh.factory<_i617.SettingsRepository>(
-      () => _i198.SettingsRepositoryImpl(
-        gh<_i126.SettingsStorage>(),
-        gh<_i33.HttpClient>(),
-        gh<_i461.WebSocketClient>(),
-        gh<_i880.WebRtcClient>(),
+    gh.factory<_i59.ScanRemoteRepository>(
+      () => _i643.ScanRepositoryImpl(
+        gh<_i627.HttpClient>(),
+        gh<_i570.SecureStorage>(),
       ),
     );
-    gh.lazySingleton<_i565.SettingsService>(
-      () => _i565.SettingsService(gh<_i617.SettingsRepository>()),
-    );
-    gh.lazySingleton<_i449.PeerSyncService>(
-      () => _i449.PeerSyncService(
-        gh<_i267.WebRtcMeshClient>(),
-        gh<_i581.CardLocalRepository>(),
-        gh<_i108.LoggerService>(),
+    gh.lazySingleton<_i378.CardService>(
+      () => _i378.CardService(
+        gh<_i483.CardRepository>(),
+        gh<_i303.CardLocalRepository>(),
+        gh<_i621.LoggerService>(),
       ),
     );
-    gh.lazySingleton<_i79.CardService>(
-      () => _i79.CardService(
-        gh<_i891.CardRepository>(),
-        gh<_i581.CardLocalRepository>(),
-        gh<_i108.LoggerService>(),
+    gh.lazySingleton<_i516.SettingsService>(
+      () => _i516.SettingsService(gh<_i800.SettingsRepository>()),
+    );
+    gh.lazySingleton<_i915.CampaignService>(
+      () => _i915.CampaignService(
+        gh<_i28.CampaignRepository>(),
+        gh<_i621.LoggerService>(),
       ),
     );
-    gh.factory<_i750.AuthViewModel>(
-      () =>
-          _i750.AuthViewModel(gh<_i42.AuthService>(), gh<_i378.AuthNotifier>()),
-    );
-    gh.lazySingleton<_i968.ScannerService>(
-      () => _i968.ScannerService(
-        gh<_i581.CardLocalRepository>(),
-        gh<_i108.LoggerService>(),
-        gh<_i817.DlqService>(),
-        gh<_i449.PeerSyncService>(),
-        gh<_i634.ScanRemoteRepository>(),
-        gh<_i741.ScanLocalRepository>(),
-        gh<_i136.SecureStorage>(),
+    gh.lazySingleton<_i450.DlqService>(
+      () => _i450.DlqService(
+        gh<_i158.DlqRepository>(),
+        gh<_i59.ScanRemoteRepository>(),
       ),
     );
-    gh.factory<_i298.CardsViewModel>(
-      () => _i298.CardsViewModel(
-        gh<_i79.CardService>(),
-        gh<_i565.SettingsService>(),
+    gh.factory<_i455.DlqViewModel>(
+      () => _i455.DlqViewModel(gh<_i450.DlqService>()),
+    );
+    gh.lazySingleton<_i660.ScannerService>(
+      () => _i660.ScannerService(
+        gh<_i303.CardLocalRepository>(),
+        gh<_i621.LoggerService>(),
+        gh<_i450.DlqService>(),
+        gh<_i630.PeerSyncService>(),
+        gh<_i59.ScanRemoteRepository>(),
+        gh<_i1059.ScanLocalRepository>(),
+        gh<_i570.SecureStorage>(),
       ),
     );
-    gh.lazySingleton<_i1053.CampaignService>(
-      () => _i1053.CampaignService(
-        gh<_i76.CampaignRepository>(),
-        gh<_i108.LoggerService>(),
+    gh.lazySingleton<_i375.MeshService>(
+      () => _i375.MeshService(
+        gh<_i867.WebSocketClient>(),
+        gh<_i773.WebRtcMeshClient>(),
+        gh<_i570.SecureStorage>(),
+        gh<_i621.LoggerService>(),
+        gh<_i378.CardService>(),
+        gh<_i660.ScannerService>(),
       ),
     );
-    gh.factory<_i75.SettingsViewModel>(
-      () => _i75.SettingsViewModel(
-        gh<_i565.SettingsService>(),
-        gh<_i1053.CampaignService>(),
-        gh<_i723.ConnectionNotifier>(),
+    gh.factory<_i178.AuthViewModel>(
+      () => _i178.AuthViewModel(
+        gh<_i599.AuthService>(),
+        gh<_i890.AuthNotifier>(),
       ),
     );
-    gh.lazySingleton<_i265.MeshService>(
-      () => _i265.MeshService(
-        gh<_i461.WebSocketClient>(),
-        gh<_i267.WebRtcMeshClient>(),
-        gh<_i136.SecureStorage>(),
-        gh<_i108.LoggerService>(),
-        gh<_i79.CardService>(),
-        gh<_i968.ScannerService>(),
+    gh.factory<_i225.CardsViewModel>(
+      () => _i225.CardsViewModel(
+        gh<_i378.CardService>(),
+        gh<_i516.SettingsService>(),
       ),
     );
-    gh.factory<_i610.ScannerViewModel>(
-      () => _i610.ScannerViewModel(
-        gh<_i968.ScannerService>(),
-        gh<_i79.CardService>(),
-        gh<_i565.SettingsService>(),
-        gh<_i723.ConnectionNotifier>(),
+    gh.factory<_i272.ScannerViewModel>(
+      () => _i272.ScannerViewModel(
+        gh<_i660.ScannerService>(),
+        gh<_i378.CardService>(),
+        gh<_i516.SettingsService>(),
+        gh<_i1056.ConnectionNotifier>(),
+      ),
+    );
+    gh.factory<_i12.SettingsViewModel>(
+      () => _i12.SettingsViewModel(
+        gh<_i516.SettingsService>(),
+        gh<_i915.CampaignService>(),
+        gh<_i1056.ConnectionNotifier>(),
       ),
     );
     return this;

@@ -119,9 +119,7 @@ void main() {
     });
 
     test('defaults to a voucher when the type is missing', () async {
-      stubGet({
-        'card': cardJson(type: null),
-      });
+      stubGet({'card': cardJson(type: null)});
 
       final card = await repository.getCardById('card-1');
 
@@ -129,9 +127,7 @@ void main() {
     });
 
     test('falls back to a voucher for an unknown type', () async {
-      stubGet({
-        'card': cardJson(type: 'wristband'),
-      });
+      stubGet({'card': cardJson(type: 'wristband')});
 
       final card = await repository.getCardById('card-1');
 

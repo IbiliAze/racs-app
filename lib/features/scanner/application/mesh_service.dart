@@ -6,6 +6,7 @@ import 'package:injectable/injectable.dart';
 import 'package:racs_reader/core/network/webrtc_mesh_client.dart';
 import 'package:racs_reader/core/network/websocket_client.dart';
 import 'package:racs_reader/core/storage/secure_storage.dart';
+import 'package:racs_reader/core/storage/settings_storage.dart';
 import 'package:racs_reader/features/cards/application/card_service.dart';
 import 'package:racs_reader/features/logger/application/logger_service.dart';
 import 'package:racs_reader/features/scanner/application/scanner_service.dart';
@@ -17,6 +18,7 @@ class MeshService {
   final WebSocketClient _wsClient;
   final WebRtcMeshClient _meshClient;
   final SecureStorage _secureStorage;
+  final SettingsStorage _settingsStorage;
   final LoggerService _loggerService;
   final CardService _cardService;
   final ScannerService _scannerService;
@@ -31,6 +33,7 @@ class MeshService {
     this._wsClient,
     this._meshClient,
     this._secureStorage,
+    this._settingsStorage,
     this._loggerService,
     this._cardService,
     this._scannerService,
@@ -44,7 +47,7 @@ class MeshService {
       if (profile == null) return;
 
       _readerId = profile['id'] as String?;
-      _campaignId = profile['campaignId'] as String?;
+      _campaignId = await _settingsStorage.getCampaignId();
 
       _wsSubscription ??= _wsClient.messages.listen(_onSignalingMessage);
       _iceSubscription ??= _meshClient.iceCandidates.listen(_onLocalIce);

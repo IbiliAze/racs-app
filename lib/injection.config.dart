@@ -217,16 +217,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i570.SecureStorage>(),
       ),
     );
-    gh.lazySingleton<_i375.MeshService>(
-      () => _i375.MeshService(
-        gh<_i867.WebSocketClient>(),
-        gh<_i773.WebRtcMeshClient>(),
-        gh<_i570.SecureStorage>(),
-        gh<_i621.LoggerService>(),
-        gh<_i378.CardService>(),
-        gh<_i660.ScannerService>(),
-      ),
-    );
     gh.factory<_i178.AuthViewModel>(
       () => _i178.AuthViewModel(
         gh<_i599.AuthService>(),
@@ -252,6 +242,17 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i516.SettingsService>(),
         gh<_i915.CampaignService>(),
         gh<_i1056.ConnectionNotifier>(),
+      ),
+    );
+    gh.lazySingleton<_i375.MeshService>(
+      () => _i375.MeshService(
+        gh<_i867.WebSocketClient>(),
+        gh<_i773.WebRtcMeshClient>(),
+        gh<_i570.SecureStorage>(),
+        gh<_i222.SettingsStorage>(),
+        gh<_i621.LoggerService>(),
+        gh<_i378.CardService>(),
+        gh<_i660.ScannerService>(),
       ),
     );
     return this;

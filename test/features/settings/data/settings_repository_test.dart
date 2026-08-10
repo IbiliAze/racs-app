@@ -208,5 +208,13 @@ void main() {
 
       expect(await repository.testStun(), isFalse);
     });
+
+    test('closes the client when the offer throws', () async {
+      when(webRtcClient.createOffer()).thenThrow(Exception('no stun server'));
+      when(webRtcClient.close()).thenAnswer((_) async {});
+
+      expect(await repository.testStun(), isFalse);
+      verify(webRtcClient.close()).called(1);
+    });
   });
 }

@@ -85,6 +85,20 @@ void main() {
 
       expect(settings.loaded, isTrue);
     });
+
+    // Built directly rather than through buildSettings so the listener is
+    // attached while the load is still in flight.
+    test('notifies listeners once storage returns', () async {
+      when(storage.getThemeMode()).thenAnswer((_) async => 'light');
+
+      final settings = ThemeSettings(settingsStorage: storage);
+      var notifications = 0;
+      settings.addListener(() => notifications++);
+
+      await pumpEventQueue();
+
+      expect(notifications, equals(1));
+    });
   });
 
   group('setThemeMode', () {});

@@ -141,6 +141,12 @@ void main() {
 
       expect(path, equals('/api/health'));
     });
+
+    test('returns false when the health endpoint fails', () async {
+      stubGet(statusCode: 500);
+
+      expect(await repository.testHttp(), isFalse);
+    });
   });
 
   group('testWebSocket', () {});

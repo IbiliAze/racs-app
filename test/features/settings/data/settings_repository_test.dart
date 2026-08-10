@@ -71,7 +71,18 @@ void main() {
     );
   });
 
-  group('saveHost', () {});
+  group('saveHost', () {
+    test('saves the host and resets the clients', () async {
+      await repository.saveHost('host-1');
+      final savedHost =
+          verify(settingsStorage.saveHost(captureAny)).captured.single
+              as String;
+
+      expect(savedHost, equals('host-1'));
+      verify(httpClient.resetHost()).called(1);
+      verify(webSocketClient.resetHost()).called(1);
+    });
+  });
 
   group('getHost', () {});
 

@@ -98,7 +98,16 @@ void main() {
     });
   });
 
-  group('saveCampaignId', () {});
+  group('saveCampaignId', () {
+    test('saves the campaign id to storage', () async {
+      await repository.saveCampaignId('campaign-1');
+      final savedCampaignId =
+          verify(settingsStorage.saveCampaignId(captureAny)).captured.single
+              as String;
+
+      expect(savedCampaignId, equals('campaign-1'));
+    });
+  });
 
   group('getCampaignId', () {});
 

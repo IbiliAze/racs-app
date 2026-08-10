@@ -51,6 +51,13 @@ void main() {
       expect(settings.themeMode, equals(ThemeMode.light));
       expect(settings.isDarkMode, isFalse);
     });
+
+    test('loads the system theme mode from storage', () async {
+      final settings = await buildSettings(savedThemeMode: 'system');
+
+      expect(settings.themeMode, equals(ThemeMode.system));
+      expect(settings.isDarkMode, isFalse);
+    });
   });
 
   group('setThemeMode', () {});

@@ -90,6 +90,12 @@ void main() {
 
       expect(await repository.getHost(), equals('host-1'));
     });
+
+    test('returns null when no host is saved', () async {
+      when(settingsStorage.getHost()).thenAnswer((_) async => null);
+
+      expect(await repository.getHost(), isNull);
+    });
   });
 
   group('saveCampaignId', () {});

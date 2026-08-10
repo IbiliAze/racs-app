@@ -169,6 +169,14 @@ void main() {
       expect(path, equals('/ws/health'));
       verify(webSocketClient.disconnect()).called(1);
     });
+
+    test('returns false when the connection throws', () async {
+      when(
+        webSocketClient.connect(any),
+      ).thenThrow(const io.SocketException('connection refused'));
+
+      expect(await repository.testWebSocket(), isFalse);
+    });
   });
 
   group('testStun', () {});

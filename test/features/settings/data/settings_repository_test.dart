@@ -84,7 +84,13 @@ void main() {
     });
   });
 
-  group('getHost', () {});
+  group('getHost', () {
+    test('gets the host from storage', () async {
+      when(settingsStorage.getHost()).thenAnswer((_) async => 'host-1');
+
+      expect(await repository.getHost(), equals('host-1'));
+    });
+  });
 
   group('saveCampaignId', () {});
 

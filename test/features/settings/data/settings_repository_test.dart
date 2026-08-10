@@ -147,6 +147,14 @@ void main() {
 
       expect(await repository.testHttp(), isFalse);
     });
+
+    test('returns false when the request throws', () async {
+      when(
+        httpClient.get(any, queryParameters: anyNamed('queryParameters')),
+      ).thenThrow(const io.SocketException('no route to host'));
+
+      expect(await repository.testHttp(), isFalse);
+    });
   });
 
   group('testWebSocket', () {});

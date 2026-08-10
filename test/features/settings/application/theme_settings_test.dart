@@ -132,5 +132,17 @@ void main() {
     });
   });
 
-  group('toggleDarkMode', () {});
+  group('toggleDarkMode', () {
+    test('turns dark mode on when enabled', () async {
+      final settings = await buildSettings(savedThemeMode: 'light');
+
+      await settings.toggleDarkMode(true);
+      final savedThemeMode =
+          verify(storage.saveThemeMode(captureAny)).captured.single as String;
+
+      expect(settings.themeMode, equals(ThemeMode.dark));
+      expect(settings.isDarkMode, isTrue);
+      expect(savedThemeMode, equals('dark'));
+    });
+  });
 }

@@ -120,6 +120,16 @@ void main() {
 
       expect(savedThemeMode, equals('system'));
     });
+
+    test('notifies listeners', () async {
+      final settings = await buildSettings(savedThemeMode: 'dark');
+      var notifications = 0;
+      settings.addListener(() => notifications++);
+
+      await settings.setThemeMode(ThemeMode.light);
+
+      expect(notifications, equals(1));
+    });
   });
 
   group('toggleDarkMode', () {});

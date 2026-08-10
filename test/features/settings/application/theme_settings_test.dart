@@ -72,6 +72,13 @@ void main() {
       expect(settings.themeMode, equals(ThemeMode.dark));
       expect(settings.isDarkMode, isTrue);
     });
+
+    test('falls back to dark mode when the saved value is unknown', () async {
+      final settings = await buildSettings(savedThemeMode: 'sepia');
+
+      expect(settings.themeMode, equals(ThemeMode.dark));
+      expect(settings.isDarkMode, isTrue);
+    });
   });
 
   group('setThemeMode', () {});

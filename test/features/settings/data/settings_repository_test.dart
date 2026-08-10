@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
@@ -179,5 +180,15 @@ void main() {
     });
   });
 
-  group('testStun', () {});
+  group('testStun', () {
+    test('returns true when the offer carries an sdp', () async {
+      when(
+        webRtcClient.createOffer(),
+      ).thenAnswer((_) async => RTCSessionDescription('v=0 candidate', 'offer'));
+      when(webRtcClient.close()).thenAnswer((_) async {});
+
+      expect(await repository.testStun(), isTrue);
+      verify(webRtcClient.close()).called(1);
+    });
+  });
 }

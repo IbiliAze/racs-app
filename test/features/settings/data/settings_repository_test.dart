@@ -117,6 +117,12 @@ void main() {
 
       expect(await repository.getCampaignId(), equals('campaign-1'));
     });
+
+    test('returns null when no campaign id is saved', () async {
+      when(settingsStorage.getCampaignId()).thenAnswer((_) async => null);
+
+      expect(await repository.getCampaignId(), isNull);
+    });
   });
 
   group('testHttp', () {});

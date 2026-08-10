@@ -109,7 +109,15 @@ void main() {
     });
   });
 
-  group('getCampaignId', () {});
+  group('getCampaignId', () {
+    test('gets the campaign id from storage', () async {
+      when(
+        settingsStorage.getCampaignId(),
+      ).thenAnswer((_) async => 'campaign-1');
+
+      expect(await repository.getCampaignId(), equals('campaign-1'));
+    });
+  });
 
   group('testHttp', () {});
 

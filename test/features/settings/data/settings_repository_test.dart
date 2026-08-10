@@ -157,7 +157,19 @@ void main() {
     });
   });
 
-  group('testWebSocket', () {});
+  group('testWebSocket', () {
+    test('returns true when the health socket connects', () async {
+      when(webSocketClient.connect(any)).thenAnswer((_) async {});
+      when(webSocketClient.disconnect()).thenAnswer((_) async {});
+
+      expect(await repository.testWebSocket(), isTrue);
+      final path =
+          verify(webSocketClient.connect(captureAny)).captured.single as String;
+
+      expect(path, equals('/ws/health'));
+      verify(webSocketClient.disconnect()).called(1);
+    });
+  });
 
   group('testStun', () {});
 }

@@ -44,7 +44,14 @@ void main() {
     });
   });
 
-  group('load', () {});
+  group('load', () {
+    test('loads the light theme mode from storage', () async {
+      final settings = await buildSettings(savedThemeMode: 'light');
+
+      expect(settings.themeMode, equals(ThemeMode.light));
+      expect(settings.isDarkMode, isFalse);
+    });
+  });
 
   group('setThemeMode', () {});
 

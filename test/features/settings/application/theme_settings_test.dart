@@ -101,7 +101,16 @@ void main() {
     });
   });
 
-  group('setThemeMode', () {});
+  group('setThemeMode', () {
+    test('updates the theme mode', () async {
+      final settings = await buildSettings(savedThemeMode: 'dark');
+
+      await settings.setThemeMode(ThemeMode.light);
+
+      expect(settings.themeMode, equals(ThemeMode.light));
+      expect(settings.isDarkMode, isFalse);
+    });
+  });
 
   group('toggleDarkMode', () {});
 }

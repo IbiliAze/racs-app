@@ -125,7 +125,23 @@ void main() {
     });
   });
 
-  group('testHttp', () {});
+  group('testHttp', () {
+    test('returns true when the health endpoint returns 200', () async {
+      stubGet();
+
+      expect(await repository.testHttp(), isTrue);
+      final path =
+          verify(
+                httpClient.get(
+                  captureAny,
+                  queryParameters: anyNamed('queryParameters'),
+                ),
+              ).captured.single
+              as String;
+
+      expect(path, equals('/api/health'));
+    });
+  });
 
   group('testWebSocket', () {});
 

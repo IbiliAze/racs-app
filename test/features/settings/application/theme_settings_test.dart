@@ -144,5 +144,17 @@ void main() {
       expect(settings.isDarkMode, isTrue);
       expect(savedThemeMode, equals('dark'));
     });
+
+    test('turns dark mode off when disabled', () async {
+      final settings = await buildSettings(savedThemeMode: 'dark');
+
+      await settings.toggleDarkMode(false);
+      final savedThemeMode =
+          verify(storage.saveThemeMode(captureAny)).captured.single as String;
+
+      expect(settings.themeMode, equals(ThemeMode.light));
+      expect(settings.isDarkMode, isFalse);
+      expect(savedThemeMode, equals('light'));
+    });
   });
 }

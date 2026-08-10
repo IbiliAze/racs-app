@@ -199,5 +199,14 @@ void main() {
 
       expect(await repository.testStun(), isFalse);
     });
+
+    test('returns false when the sdp is empty', () async {
+      when(
+        webRtcClient.createOffer(),
+      ).thenAnswer((_) async => RTCSessionDescription('', 'offer'));
+      when(webRtcClient.close()).thenAnswer((_) async {});
+
+      expect(await repository.testStun(), isFalse);
+    });
   });
 }

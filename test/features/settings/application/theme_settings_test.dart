@@ -34,6 +34,14 @@ void main() {
       expect(settings.themeMode, equals(ThemeMode.dark));
       expect(settings.isDarkMode, isTrue);
     });
+
+    test('is not loaded before storage returns', () {
+      when(storage.getThemeMode()).thenAnswer((_) async => 'dark');
+
+      final settings = ThemeSettings(settingsStorage: storage);
+
+      expect(settings.loaded, isFalse);
+    });
   });
 
   group('load', () {});
